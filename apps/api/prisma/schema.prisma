@@ -1,0 +1,226 @@
+// INTERACT Stage — schéma de données
+// Conventions : identifiants UUID, montants en entiers (FCFA), dates en UTC.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  FAN
+  ARTIST
+  MANAGER
+  ADMIN
+  MODERATOR
+  FINANCE
+  SUPPORT
+  EDITOR
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETION_PENDING
+}
+
+enum Locale {
+  fr
+  en
+}
+
+/// Formats de contenu (section 5.1 du cahier des charges)
+enum ContentFormat {
+  AUDIO
+  VIDEO
+  IMAGE
+  TEXT
+  LIVE
+  PHYSICAL_WORK
+  SERVICE
+}
+
+enum ArtistType {
+  INDIVIDUAL
+  COLLECTIVE
+}
+
+enum ArtistMemberRole {
+  OWNER
+  MEMBER
+  MANAGER
+}
+
+model User {
+  id                  String       @id @default(uuid()) @db.Uuid
+  phone               String       @unique
+  email               String?      @unique
+  displayName         String?
+  locale              Locale       @default(fr)
+  country             String       @default("CM")
+  city                String?
+  roles               Role[]       @default([FAN])
+  status              UserStatus   @default(ACTIVE)
+  pinHash             String?
+  kycLevel            Int          @default(0)
+  birthYear           Int?
+  deletionRequestedAt DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  sessions       Session[]
+  artistMembers  ArtistMember[]
+  interests      UserInterest[]
+  auditLogs      AuditLog[]     @relation("AuditActor")
+}
+
+/// Code à usage unique envoyé par SMS (ACC-01). Le code n'est jamais stocké en clair.
+model OtpChallenge {
+  id         String    @id @default(uuid()) @db.Uuid
+  phone      String
+  codeHash   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([phone, createdAt])
+}
+
+/// Session d'appareil (ACC-10). Le jeton de rafraîchissement est stocké haché.
+model Session {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  tokenHash  String    @unique
+  deviceName String?
+  userAgent  String?
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  lastUsedAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Discipline configurable sans développement (section 5).
+model Discipline {
+  id             String          @id @default(uuid()) @db.Uuid
+  slug           String          @unique
+  nameFr         String
+  nameEn         String
+  enabled        Boolean         @default(false)
+  sortOrder      Int             @default(0)
+  allowedFormats ContentFormat[]
+  /// Définition des métadonnées propres à la discipline (voir src/disciplines/metadata-schema.ts)
+  metadataSchema Json            @default("[]")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  categories  Category[]
+  artists     ArtistDiscipline[]
+  interestedBy UserInterest[]
+}
+
+model Category {
+  id           String   @id @default(uuid()) @db.Uuid
+  disciplineId String   @db.Uuid
+  slug         String
+  nameFr       String
+  nameEn       String
+  sortOrder    Int      @default(0)
+  enabled      Boolean  @default(true)
+
+  discipline Discipline       @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  artists    ArtistCategory[]
+
+  @@unique([disciplineId, slug])
+}
+
+model UserInterest {
+  userId       String @db.Uuid
+  disciplineId String @db.Uuid
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discipline Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+
+  @@id([userId, disciplineId])
+}
+
+/// Artiste individuel ou collectif (ACC-04, ACC-07, PRO-01)
+model Artist {
+  id        String     @id @default(uuid()) @db.Uuid
+  slug      String     @unique
+  stageName String
+  type      ArtistType @default(INDIVIDUAL)
+  country   String     @default("CM")
+  city      String
+  bioFr     String?
+  bioEn     String?
+  avatarUrl String?
+  bannerUrl String?
+  verified  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  members     ArtistMember[]
+  disciplines ArtistDiscipline[]
+  categories  ArtistCategory[]
+
+  @@index([city])
+}
+
+model ArtistMember {
+  artistId    String           @db.Uuid
+  userId      String           @db.Uuid
+  role        ArtistMemberRole
+  /// Droits accordés (MGR-01), ex. ["publish","bookings","revenue.read"]
+  permissions String[]         @default([])
+  createdAt   DateTime         @default(now())
+
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([artistId, userId])
+  @@index([userId])
+}
+
+model ArtistDiscipline {
+  artistId     String @db.Uuid
+  disciplineId String @db.Uuid
+
+  artist     Artist     @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  discipline Discipline @relation(fields: [disciplineId], references: [id], onDelete: Restrict)
+
+  @@id([artistId, disciplineId])
+}
+
+model ArtistCategory {
+  artistId   String @db.Uuid
+  categoryId String @db.Uuid
+
+  artist   Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@id([artistId, categoryId])
+}
+
+/// Journal d'audit non modifiable (ADM-10, MGR-05)
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String
+  entityType String
+  entityId   String?
+  data       Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+}
