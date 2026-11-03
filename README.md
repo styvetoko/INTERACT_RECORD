@@ -7,6 +7,18 @@ et créatives sont prévues dans l'architecture et s'ouvrent par simple configur
 Le cahier des charges complet est la référence fonctionnelle : chaque exigence y porte un identifiant (ACC-01, PRO-03…)
 repris dans le code et les tests.
 
+## Organisation du travail
+
+| Fichier | Rôle |
+| --- | --- |
+| `CLAUDE.md` | Charte : règles non négociables, sources de vérité, circuit de livraison |
+| `docs/organisation.md` | Rôles, matrice de décision (RACI), revues obligatoires, rituels |
+| `.claude/agents/` | Les 10 rôles de l'équipe (architecte, produit, design, back-end, paiements, web, mobile, qualité, sécurité, infrastructure) |
+| `.claude/skills/` | Les 9 savoir-faire (architecture, API, paiements, design, tests, sécurité, web, mobile, livraison) |
+| `docs/adr/` | Décisions d'architecture |
+| `packages/design-tokens/tokens.json` | Source unique des couleurs, typographies et animations |
+| `CHANGELOG.md` | Journal des changements |
+
 ## Contenu du dépôt
 
 | Dossier | Contenu | État |
@@ -14,6 +26,7 @@ repris dans le code et les tests.
 | `apps/api` | API NestJS + PostgreSQL (Prisma) | J1 livré |
 | `apps/web` | Web public, PWA et back-office (Next.js) | à venir |
 | `apps/mobile` | Applications Android et iOS (Flutter) | à venir |
+| `packages/design-tokens` | Jetons de design (couleurs, typographies, animations) | v0.1 proposée |
 
 ## Démarrage rapide
 
