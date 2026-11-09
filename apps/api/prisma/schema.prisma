@@ -66,6 +66,8 @@ model User {
   status              UserStatus   @default(ACTIVE)
   pinHash             String?
   suspendedReason     String?
+  /// Qui a prononcé la suspension : seul un administrateur lève une suspension décidée par un administrateur
+  suspendedById       String?      @db.Uuid
   kycLevel            Int          @default(0)
   birthYear           Int?
   deletionRequestedAt DateTime?
@@ -76,7 +78,7 @@ model User {
   artistMembers  ArtistMember[]
   interests      UserInterest[]
   auditLogs      AuditLog[]     @relation("AuditActor")
-  images         MediaImage[]
+  uploadedImages MediaImage[]
 }
 
 /// Code à usage unique envoyé par SMS (ACC-01). Le code n'est jamais stocké en clair.
@@ -160,6 +162,8 @@ model Artist {
   stageName String
   /// Nom de scène sans accents ni majuscules, pour la recherche (calculé par l'application)
   searchName String    @default("")
+  /// Ville sans accents ni majuscules, pour le filtre (calculée par l'application)
+  searchCity String    @default("")
   type      ArtistType @default(INDIVIDUAL)
   country   String     @default("CM")
   city      String
@@ -182,8 +186,10 @@ model Artist {
   disciplines    ArtistDiscipline[]
   categories     ArtistCategory[]
   bookingProfile ArtistBookingProfile?
+  images         MediaImage[]          @relation("ArtistImages")
 
   @@index([city])
+  @@index([searchCity])
   @@index([searchName])
   @@index([createdAt, id])
 }
@@ -210,7 +216,10 @@ enum ImagePurpose {
 /// Image traitée : déclinaisons WebP, couleur dominante et aperçu flou (PUB-04, section 11.2)
 model MediaImage {
   id            String       @id @default(uuid()) @db.Uuid
-  ownerUserId   String       @db.Uuid
+  /// Profil artiste propriétaire de l'image (la suppression d'un compte ne fait pas disparaître la vitrine)
+  artistId      String?      @db.Uuid
+  /// Personne qui a envoyé l'image (traçabilité) ; conservée à null si son compte est supprimé
+  uploadedById  String?      @db.Uuid
   purpose       ImagePurpose
   width         Int
   height        Int
@@ -222,11 +231,26 @@ model MediaImage {
   bytesTotal    Int
   createdAt     DateTime     @default(now())
 
-  owner          User    @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  artist         Artist? @relation("ArtistImages", fields: [artistId], references: [id], onDelete: SetNull)
+  uploadedBy     User?   @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
   artistAvatarOf Artist? @relation("ArtistAvatar")
   artistBannerOf Artist? @relation("ArtistBanner")
 
-  @@index([ownerUserId])
+  @@index([artistId])
+  @@index([uploadedById])
+  @@index([createdAt])
+}
+
+/// Fichiers à supprimer du stockage : rejoués jusqu'au succès, aucun fichier n'est oublié.
+model StorageDeletion {
+  id            String   @id @default(uuid()) @db.Uuid
+  key           String   @unique
+  attempts      Int      @default(0)
+  lastError     String?
+  nextAttemptAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([nextAttemptAt])
 }
 
 model ArtistMember {

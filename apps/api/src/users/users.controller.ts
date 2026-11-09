@@ -1,8 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put } from '@nestjs/common';
 import { Locale } from '@prisma/client';
 import { z } from 'zod';
 import { AuthUser, CurrentUser } from '../auth/decorators';
-import { parse } from '../common/validation';
+import { parse, UuidParam } from '../common/validation';
 import { toPrivateUser } from './user.mapper';
 import { UsersService } from './users.service';
 
@@ -60,7 +60,7 @@ export class UsersController {
 
   @Delete('sessions/:id')
   @HttpCode(204)
-  async revoke(@CurrentUser() auth: AuthUser, @Param('id', ParseUUIDPipe) id: string): Promise<void> {
+  async revoke(@CurrentUser() auth: AuthUser, @Param('id', UuidParam) id: string): Promise<void> {
     await this.users.revokeSession(auth.id, id);
   }
 }

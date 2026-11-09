@@ -23,10 +23,10 @@ repris dans le code et les tests.
 
 | Dossier | Contenu | État |
 | --- | --- | --- |
-| `apps/api` | API NestJS + PostgreSQL (Prisma) | J1 livré |
-| `apps/web` | Web public, PWA et back-office (Next.js) | à venir |
+| `apps/api` | API NestJS + PostgreSQL (Prisma) | J1 et J2 livrés |
+| `apps/web` | Web public : accueil et vitrines d'artistes (Next.js) | J2 livré ; PWA et écrans du back-office à venir |
 | `apps/mobile` | Applications Android et iOS (Flutter) | à venir |
-| `packages/design-tokens` | Jetons de design (couleurs, typographies, animations) | v0.1 proposée |
+| `packages/design-tokens` | Jetons de design, générés en CSS, TypeScript et Dart | v0.1 proposée |
 
 ## Démarrage rapide
 
@@ -51,6 +51,17 @@ pnpm db:migrate && pnpm db:seed
 ```bash
 pnpm dev:api
 ```
+
+```bash
+pnpm --filter @interact/api seed:demo
+```
+
+```bash
+pnpm --filter @interact/web dev
+```
+
+`seed:demo` crée 8 artistes **fictifs** avec des visuels abstraits générés (développement uniquement).
+Le site répond sur `http://localhost:3000` (copier `apps/web/.env.example` en `apps/web/.env.local`).
 
 L'API répond sur `http://localhost:4000`. En développement, les SMS ne sont pas envoyés : le code de connexion
 apparaît dans les journaux du serveur (faux fournisseur SMS).
@@ -86,6 +97,23 @@ Toutes les routes sont préfixées par `/v1` (sauf `/health`). Les erreurs renvo
 | GET / PATCH | `/v1/artists/:slug` | Profil public, modification par le propriétaire | PRO-01 |
 | GET / POST / PATCH | `/v1/admin/disciplines…` | Configuration des disciplines et catégories | ADM-07 |
 | GET | `/health` | État du service et de la base | 11.5 |
+
+## API livrée au J2
+
+| Méthode | Route | Rôle | Exigences |
+| --- | --- | --- | --- |
+| GET | `/v1/artists` | Annuaire : discipline, ville, nom (sans accents), curseur | DEC-05 |
+| PATCH | `/v1/artists/:slug` | Accroche, biographies, liens, catégories (un renommage retire le badge) | PRO-01, ACC-06 |
+| PUT / DELETE | `/v1/artists/:slug/avatar` et `/banner` | Images traitées (WebP, couleur dominante, aperçu flou) | PRO-01 |
+| PUT | `/v1/artists/:slug/booking-profile` | Fiche booking | PRO-06 |
+| GET | `/v1/artists/:slug/manage` | Vue de gestion, jauge de complétude, membres | Parcours 7.2 |
+| GET | `/v1/artists/:slug/qr.svg` | QR code du lien de partage | PRO-04 |
+| GET | `/v1/reference/booking-service-types` | Types de prestations | BOO-01 |
+| GET | `/v1/admin/users[/:id]` | Recherche (numéros masqués) et fiche, consultations tracées | ADM-01 |
+| POST | `/v1/admin/users/:id/suspend` et `/reactivate` | Suspension et réactivation avec motif | ADM-01 |
+| PUT | `/v1/admin/users/:id/roles` | Rôles internes | ADM-01 |
+| POST | `/v1/admin/artists/:slug/verification` | Badge artiste vérifié | ACC-06 |
+| GET | `/v1/admin/audit-logs` | Journal d'audit | ADM-10 |
 
 ## Choix techniques
 

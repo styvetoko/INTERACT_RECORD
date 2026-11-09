@@ -30,7 +30,16 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Failles connues dans les dépendances
+        run: pnpm audit --audit-level high
+      - name: Jetons de design à jour
+        run: pnpm --filter @interact/design-tokens test
       - run: pnpm --filter @interact/api prisma:generate
       - run: pnpm --filter @interact/api lint
       - run: pnpm --filter @interact/api build
       - run: pnpm --filter @interact/api test
+      - run: pnpm --filter @interact/web lint
+      - run: pnpm --filter @interact/web test
+      - run: pnpm --filter @interact/web build
+        env:
+          API_URL: http://localhost:4000

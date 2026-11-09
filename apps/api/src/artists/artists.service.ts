@@ -1,10 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ArtistType, ImagePurpose, Prisma } from '@prisma/client';
 import QRCode from 'qrcode';
 import tokens from '@interact/design-tokens/tokens.json';
 import { AuditService } from '../audit/audit.service';
 import { afterCursor, newestFirst, Page, toPage } from '../common/pagination';
-import { isReservedSlug, normalizeForSearch, slugify } from '../common/slug';
+import { escapeLike, isReservedSlug, normalizeForSearch, slugify } from '../common/slug';
 import { env } from '../config/env';
 import { MediaService, PublicImage } from '../media/media.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -46,6 +46,7 @@ export interface CreateArtistInput {
 export interface UpdateArtistInput {
   stageName?: string;
   city?: string;
+  categorySlugs?: string[];
   bioFr?: string | null;
   bioEn?: string | null;
   tagline?: string | null;
@@ -62,6 +63,16 @@ export interface ListArtistsQuery {
 
 /** Droits fins d'un membre sur un profil artiste (MGR-01). */
 export type ArtistPermission = 'profile.edit';
+
+/** Un profil n'est visible publiquement que si au moins un propriétaire n'est pas suspendu. */
+const visibleArtist: Prisma.ArtistWhereInput = {
+  members: { some: { role: 'OWNER', user: { status: { not: 'SUSPENDED' } } } },
+};
+
+const isUniqueViolation = (e: unknown, field: string) =>
+  e instanceof Prisma.PrismaClientKnownRequestError &&
+  e.code === 'P2002' &&
+  JSON.stringify(e.meta?.target ?? '').includes(field);
 
 @Injectable()
 export class ArtistsService {
@@ -145,10 +156,27 @@ export class ArtistsService {
     if (disciplines.length !== disciplineSlugs.length) {
       throw new BadRequestException({ code: 'DISCIPLINE_UNKNOWN', message: 'Discipline inconnue ou pas encore ouverte' });
     }
+    const categoryIds = this.resolveCategories(disciplines, input.categorySlugs);
 
-    // Une catégorie s'écrit « discipline/catégorie » ou simplement « catégorie » si elle est sans ambiguïté.
+    // Deux créations simultanées du même nom peuvent viser le même identifiant : on réessaie avec le suivant.
+    for (let attempt = 0; ; attempt++) {
+      const slug = await this.uniqueSlug(input.stageName);
+      try {
+        return await this.createWithSlug(userId, input, slug, disciplines.map((d) => d.id), categoryIds);
+      } catch (e) {
+        if (attempt < 3 && isUniqueViolation(e, 'slug')) continue;
+        throw e;
+      }
+    }
+  }
+
+  /** Une catégorie s'écrit « discipline/catégorie » ou simplement « catégorie » si elle est sans ambiguïté. */
+  private resolveCategories(
+    disciplines: { slug: string; categories: { id: string; slug: string }[] }[],
+    categorySlugs: string[],
+  ): string[] {
     const categoryIds: string[] = [];
-    for (const raw of new Set(input.categorySlugs)) {
+    for (const raw of new Set(categorySlugs)) {
       const [dSlug, cSlug] = raw.includes('/') ? raw.split('/', 2) : [undefined, raw];
       const matches = disciplines
         .filter((d) => !dSlug || d.slug === dSlug)
@@ -158,20 +186,23 @@ export class ArtistsService {
       }
       categoryIds.push(matches[0].id);
     }
+    return categoryIds;
+  }
 
-    const slug = await this.uniqueSlug(input.stageName);
+  private async createWithSlug(userId: string, input: CreateArtistInput, slug: string, disciplineIds: string[], categoryIds: string[]) {
     const artist = await this.prisma.$transaction(async (tx) => {
       const created = await tx.artist.create({
         data: {
           slug,
           stageName: input.stageName,
           searchName: normalizeForSearch(input.stageName),
+          searchCity: normalizeForSearch(input.city),
           city: input.city,
           type: input.type,
           bioFr: input.bioFr,
           bioEn: input.bioEn,
           members: { create: { userId, role: 'OWNER' } },
-          disciplines: { create: disciplines.map((d) => ({ disciplineId: d.id })) },
+          disciplines: { create: disciplineIds.map((disciplineId) => ({ disciplineId })) },
           categories: { create: categoryIds.map((categoryId) => ({ categoryId })) },
         },
         include: artistInclude,
@@ -186,17 +217,22 @@ export class ArtistsService {
     return this.toPublic(artist);
   }
 
+  /** Vue publique : un profil dont tous les propriétaires sont suspendus est masqué (404). */
   async getBySlug(slug: string) {
-    return this.toPublic(await this.findOrFail(slug));
+    const artist = await this.prisma.artist.findFirst({ where: { slug, ...visibleArtist }, include: artistInclude });
+    if (!artist) throw new NotFoundException({ code: 'ARTIST_NOT_FOUND', message: 'Artiste introuvable' });
+    return this.toPublic(artist);
   }
 
   /** Annuaire public (DEC-05 partiel) : filtres discipline, ville, nom ; pagination par curseur. */
   async list(query: ListArtistsQuery): Promise<Page<ReturnType<ArtistsService['toCard']>>> {
     const where: Prisma.ArtistWhereInput = {
       ...afterCursor(query.cursor),
+      ...visibleArtist,
       ...(query.discipline ? { disciplines: { some: { discipline: { slug: query.discipline, enabled: true } } } } : {}),
-      ...(query.city ? { city: { equals: query.city.trim(), mode: 'insensitive' } } : {}),
-      ...(query.q ? { searchName: { contains: normalizeForSearch(query.q) } } : {}),
+      // Égalité exacte sur la forme normalisée : insensible aux accents et à la casse, sans joker possible.
+      ...(query.city ? { searchCity: normalizeForSearch(query.city) } : {}),
+      ...(query.q ? { searchName: { contains: escapeLike(normalizeForSearch(query.q)) } } : {}),
     };
     const rows = await this.prisma.artist.findMany({
       where,
@@ -209,30 +245,72 @@ export class ArtistsService {
 
   async update(userId: string, slug: string, input: UpdateArtistInput) {
     const artist = await this.findForMember(userId, slug, 'profile.edit');
-    const { socialLinks, ...fields } = input;
-    const updated = await this.prisma.artist.update({
-      where: { id: artist.id },
-      data: {
-        ...fields,
-        ...(fields.stageName ? { searchName: normalizeForSearch(fields.stageName) } : {}),
-        ...(socialLinks ? { socialLinks: mergeSocialLinks(artist.socialLinks, socialLinks) as Prisma.InputJsonValue } : {}),
-      },
-      include: artistInclude,
+    const { socialLinks, categorySlugs, ...fields } = input;
+
+    let categoryIds: string[] | undefined;
+    if (categorySlugs) {
+      const disciplines = await this.prisma.discipline.findMany({
+        where: { artists: { some: { artistId: artist.id } } },
+        include: { categories: { where: { enabled: true } } },
+      });
+      categoryIds = this.resolveCategories(disciplines, categorySlugs);
+    }
+
+    const renamed = fields.stageName !== undefined && fields.stageName !== artist.stageName;
+    // ACC-06 : le badge certifie une identité ; changer de nom de scène le retire jusqu'à une nouvelle vérification.
+    const loseBadge = renamed && artist.verified;
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      if (categoryIds) {
+        await tx.artistCategory.deleteMany({ where: { artistId: artist.id } });
+        await tx.artistCategory.createMany({ data: categoryIds.map((categoryId) => ({ artistId: artist.id, categoryId })) });
+      }
+      const result = await tx.artist.update({
+        where: { id: artist.id },
+        data: {
+          ...fields,
+          ...(fields.stageName ? { searchName: normalizeForSearch(fields.stageName) } : {}),
+          ...(fields.city ? { searchCity: normalizeForSearch(fields.city) } : {}),
+          ...(socialLinks ? { socialLinks: mergeSocialLinks(artist.socialLinks, socialLinks) as Prisma.InputJsonValue } : {}),
+          ...(loseBadge ? { verified: false, verifiedAt: null } : {}),
+        },
+        include: artistInclude,
+      });
+      await this.audit.log({
+        actorId: userId,
+        action: 'artist.update',
+        entityType: 'Artist',
+        entityId: artist.id,
+        data: {
+          changes: Object.keys(input),
+          ...(renamed ? { stageName: { before: artist.stageName, after: fields.stageName } } : {}),
+        },
+      }, tx);
+      if (loseBadge) {
+        await this.audit.log({
+          actorId: userId,
+          action: 'artist.unverify',
+          entityType: 'Artist',
+          entityId: artist.id,
+          data: { reason: 'Changement de nom de scène : nouvelle vérification nécessaire', automatic: true },
+        }, tx);
+      }
+      return result;
     });
-    await this.audit.log({ actorId: userId, action: 'artist.update', entityType: 'Artist', entityId: artist.id, data: { changes: Object.keys(input) } });
     return this.toPublic(updated);
   }
 
   /** PRO-06 : fiche booking. */
   async setBookingProfile(userId: string, slug: string, input: BookingProfileInput) {
     const artist = await this.findForMember(userId, slug, 'profile.edit');
+    const rider = input.technicalRider?.trim();
     const data = {
       isBookable: input.isBookable,
       priceMinXaf: input.priceMinXaf ?? null,
       priceMaxXaf: input.priceMaxXaf ?? null,
       travelCities: [...new Set(input.travelCities)],
       serviceTypes: [...new Set(input.serviceTypes)],
-      technicalRider: input.technicalRider ?? null,
+      technicalRider: rider ? rider : null,
     };
     await this.prisma.artistBookingProfile.upsert({
       where: { artistId: artist.id },
@@ -246,14 +324,23 @@ export class ArtistsService {
   /** PRO-01 : photo de profil ou bannière. L'ancienne image est supprimée après le remplacement. */
   async setImage(userId: string, slug: string, purpose: ImagePurpose, file: Buffer) {
     const artist = await this.findForMember(userId, slug, 'profile.edit');
-    const image = await this.media.createImage(userId, purpose, file);
     const field = purpose === 'ARTIST_AVATAR' ? 'avatarImageId' : 'bannerImageId';
     const previousId = artist[field];
+    const image = await this.media.createImage(artist.id, userId, purpose, file);
+    // Remplacement conditionnel : si une autre image a été posée entre-temps, la nôtre est abandonnée.
+    let swapped = 0;
     try {
-      await this.prisma.artist.update({ where: { id: artist.id }, data: { [field]: image.id } });
+      swapped = (await this.prisma.artist.updateMany({
+        where: { id: artist.id, [field]: previousId },
+        data: { [field]: image.id },
+      })).count;
     } catch (e) {
       await this.media.deleteImage(image.id);
       throw e;
+    }
+    if (swapped === 0) {
+      await this.media.deleteImage(image.id);
+      throw new ConflictException({ code: 'ARTIST_IMAGE_CONFLICT', message: 'Une autre image vient d’être envoyée. Recharge la page puis réessaie.' });
     }
     if (previousId) await this.media.deleteImage(previousId);
     await this.audit.log({ actorId: userId, action: `artist.${purpose === 'ARTIST_AVATAR' ? 'avatar' : 'banner'}.set`, entityType: 'Artist', entityId: artist.id });
@@ -265,7 +352,7 @@ export class ArtistsService {
     const field = purpose === 'ARTIST_AVATAR' ? 'avatarImageId' : 'bannerImageId';
     const previousId = artist[field];
     if (previousId) {
-      await this.prisma.artist.update({ where: { id: artist.id }, data: { [field]: null } });
+      await this.prisma.artist.updateMany({ where: { id: artist.id, [field]: previousId }, data: { [field]: null } });
       await this.media.deleteImage(previousId);
       await this.audit.log({ actorId: userId, action: `artist.${purpose === 'ARTIST_AVATAR' ? 'avatar' : 'banner'}.remove`, entityType: 'Artist', entityId: artist.id });
     }
@@ -313,7 +400,7 @@ export class ArtistsService {
 
   /** PRO-04 : QR code du lien de partage, sombre sur clair pour être lisible par tous les téléphones. */
   async qrCodeSvg(slug: string): Promise<string> {
-    const artist = await this.prisma.artist.findUnique({ where: { slug }, select: { slug: true } });
+    const artist = await this.prisma.artist.findFirst({ where: { slug, ...visibleArtist }, select: { slug: true } });
     if (!artist) throw new NotFoundException({ code: 'ARTIST_NOT_FOUND', message: 'Artiste introuvable' });
     return QRCode.toString(this.shareUrl(artist.slug), {
       type: 'svg',
@@ -325,20 +412,22 @@ export class ArtistsService {
 
   /** ACC-06 : badge « artiste vérifié », attribué ou retiré par l'équipe, avec motif. */
   async setVerified(actorId: string, slug: string, verified: boolean, reason: string) {
-    const artist = await this.prisma.artist.findUnique({ where: { slug } });
+    const artist = await this.prisma.artist.findUnique({ where: { slug }, include: { members: true } });
     if (!artist) throw new NotFoundException({ code: 'ARTIST_NOT_FOUND', message: 'Artiste introuvable' });
-    await this.prisma.artist.update({
-      where: { id: artist.id },
-      data: { verified, verifiedAt: verified ? new Date() : null },
+    if (artist.members.some((m) => m.userId === actorId)) {
+      throw new ForbiddenException({ code: 'ARTIST_VERIFY_OWN_PROFILE', message: 'Tu ne peux pas vérifier un profil dont tu es membre' });
+    }
+    await this.prisma.$transaction(async (tx) => {
+      await tx.artist.update({ where: { id: artist.id }, data: { verified, verifiedAt: verified ? new Date() : null } });
+      await this.audit.log({
+        actorId,
+        action: verified ? 'artist.verify' : 'artist.unverify',
+        entityType: 'Artist',
+        entityId: artist.id,
+        data: { reason },
+      }, tx);
     });
-    await this.audit.log({
-      actorId,
-      action: verified ? 'artist.verify' : 'artist.unverify',
-      entityType: 'Artist',
-      entityId: artist.id,
-      data: { reason },
-    });
-    return this.getBySlug(slug);
+    return this.toPublic(await this.findOrFail(slug));
   }
 
   private async findOrFail(slug: string): Promise<ArtistFull> {
@@ -353,7 +442,7 @@ export class ArtistsService {
     if (!artist) throw new NotFoundException({ code: 'ARTIST_NOT_FOUND', message: 'Artiste introuvable' });
     const member = artist.members.find((m) => m.userId === userId);
     const allowed = member && (member.role === 'OWNER' || !permission || member.permissions.includes(permission));
-    if (!allowed) throw new ForbiddenException({ code: 'FORBIDDEN', message: 'Tu ne peux pas modifier ce profil' });
+    if (!allowed) throw new ForbiddenException({ code: 'ARTIST_FORBIDDEN', message: 'Tu ne peux pas modifier ce profil' });
     return artist;
   }
 

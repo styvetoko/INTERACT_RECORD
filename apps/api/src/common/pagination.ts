@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { z } from 'zod';
+import { isUuid } from './validation';
 
 export const PageQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
@@ -24,7 +25,7 @@ export function encodeCursor(key: CursorKey): string {
 export function decodeCursor(cursor: string): CursorKey {
   const [iso, id] = Buffer.from(cursor, 'base64url').toString().split('|');
   const createdAt = new Date(iso ?? '');
-  if (!id || Number.isNaN(createdAt.getTime()) || !/^[0-9a-f-]{36}$/.test(id)) {
+  if (!id || Number.isNaN(createdAt.getTime()) || !isUuid(id)) {
     throw new BadRequestException({ code: 'CURSOR_INVALID', message: 'Curseur de pagination invalide' });
   }
   return { createdAt, id };

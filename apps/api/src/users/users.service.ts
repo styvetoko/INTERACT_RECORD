@@ -1,9 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Locale, Prisma, Role, UserStatus } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { AuthService } from '../auth/auth.service';
 import { afterCursor, newestFirst, toPage } from '../common/pagination';
-import { normalizePhone } from '../common/phone';
+import { maskPhone, normalizePhone } from '../common/phone';
+import { escapeLike } from '../common/slug';
 import { env } from '../config/env';
 import { hashSecret, verifySecret } from '../common/crypto';
 import { TooManyRequestsError } from '../common/http-errors';
@@ -96,9 +97,11 @@ export class UsersService {
   /** ACC-12 : demande de suppression avec 30 jours de grâce. Les sessions sont fermées. */
   async requestDeletion(userId: string) {
     const now = new Date();
-    await this.prisma.user.update({ where: { id: userId }, data: { status: 'DELETION_PENDING', deletionRequestedAt: now } });
-    await this.auth.revokeAllSessions(userId);
-    await this.audit.log({ actorId: userId, action: 'user.deletion_requested', entityType: 'User', entityId: userId });
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({ where: { id: userId }, data: { status: 'DELETION_PENDING', deletionRequestedAt: now } });
+      await this.auth.revokeAllSessions(userId, tx);
+      await this.audit.log({ actorId: userId, action: 'user.deletion_requested', entityType: 'User', entityId: userId }, tx);
+    });
     return { deletionScheduledFor: new Date(now.getTime() + 30 * 86_400_000) };
   }
 
@@ -115,12 +118,19 @@ export class UsersService {
   // ---------- Back-office (ADM-01) ----------
 
   /** Recherche par numéro (exact) ou par nom ; filtres statut et rôle ; pagination par curseur. */
-  async adminSearch(query: { q?: string; status?: UserStatus; role?: Role; limit: number; cursor?: string }) {
+  async adminSearch(actorId: string, query: { q?: string; status?: UserStatus; role?: Role; limit: number; cursor?: string }) {
     let qFilter: Prisma.UserWhereInput = {};
+    const phone = query.q ? normalizePhone(query.q, env().DEFAULT_COUNTRY) : null;
     if (query.q) {
-      const phone = normalizePhone(query.q, env().DEFAULT_COUNTRY);
-      qFilter = phone ? { phone } : { displayName: { contains: query.q, mode: 'insensitive' } };
+      qFilter = phone ? { phone } : { displayName: { contains: escapeLike(query.q), mode: 'insensitive' } };
     }
+    // Chaque recherche est tracée (sans le numéro en clair).
+    await this.audit.log({
+      actorId,
+      action: 'user.search',
+      entityType: 'User',
+      data: { q: phone ? maskPhone(phone) : query.q ?? null, status: query.status ?? null, role: query.role ?? null },
+    });
     const rows = await this.prisma.user.findMany({
       where: {
         ...afterCursor(query.cursor),
@@ -131,9 +141,10 @@ export class UsersService {
       orderBy: newestFirst,
       take: query.limit + 1,
     });
+    // Liste : numéros masqués. Le numéro complet n'apparaît que sur la fiche, consultation tracée.
     return toPage(rows, query.limit, (u) => ({
       id: u.id,
-      phone: u.phone,
+      phone: maskPhone(u.phone),
       displayName: u.displayName,
       city: u.city,
       roles: u.roles,
@@ -143,7 +154,14 @@ export class UsersService {
     }));
   }
 
-  async adminGet(userId: string) {
+  /** Fiche complète d'un compte : la consultation est écrite dans le journal d'audit. */
+  async adminView(actorId: string, userId: string) {
+    const view = await this.adminGet(userId);
+    await this.audit.log({ actorId, action: 'user.view', entityType: 'User', entityId: userId });
+    return view;
+  }
+
+  private async adminGet(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { artistMembers: { include: { artist: { select: { slug: true, stageName: true, verified: true } } } } },
@@ -160,6 +178,7 @@ export class UsersService {
       roles: user.roles,
       status: user.status,
       suspendedReason: user.suspendedReason,
+      suspendedById: user.suspendedById,
       kycLevel: user.kycLevel,
       hasPin: user.pinHash !== null,
       deletionRequestedAt: user.deletionRequestedAt,
@@ -172,30 +191,47 @@ export class UsersService {
   /** Suspension : motif obligatoire, sessions fermées. Personne ne se suspend soi-même ; seul un admin suspend un membre de l'équipe. */
   async adminSuspend(actor: { id: string; roles: Role[] }, userId: string, reason: string) {
     if (actor.id === userId) {
-      throw new ForbiddenException({ code: 'CANNOT_SUSPEND_SELF', message: 'Tu ne peux pas suspendre ton propre compte' });
+      throw new ForbiddenException({ code: 'ADMIN_CANNOT_SUSPEND_SELF', message: 'Tu ne peux pas suspendre ton propre compte' });
     }
     const target = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!target) throw new NotFoundException({ code: 'USER_NOT_FOUND', message: 'Utilisateur introuvable' });
     if (target.roles.some(isInternal) && !actor.roles.includes('ADMIN')) {
-      throw new ForbiddenException({ code: 'CANNOT_SUSPEND_STAFF', message: 'Seul un administrateur peut suspendre un membre de l’équipe' });
+      throw new ForbiddenException({ code: 'ADMIN_CANNOT_SUSPEND_STAFF', message: 'Seul un administrateur peut suspendre un membre de l’équipe' });
     }
     if (target.status === 'SUSPENDED') {
-      throw new BadRequestException({ code: 'ALREADY_SUSPENDED', message: 'Ce compte est déjà suspendu' });
+      throw new ConflictException({ code: 'USER_ALREADY_SUSPENDED', message: 'Ce compte est déjà suspendu' });
     }
-    await this.prisma.user.update({ where: { id: userId }, data: { status: 'SUSPENDED', suspendedReason: reason } });
-    const closed = await this.auth.revokeAllSessions(userId);
-    await this.audit.log({ actorId: actor.id, action: 'user.suspend', entityType: 'User', entityId: userId, data: { reason, closedSessions: closed } });
+    // Une demande de suppression en cours est conservée (deletionRequestedAt) et restaurée à la réactivation.
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({ where: { id: userId }, data: { status: 'SUSPENDED', suspendedReason: reason, suspendedById: actor.id } });
+      const closed = await this.auth.revokeAllSessions(userId, tx);
+      await this.audit.log({ actorId: actor.id, action: 'user.suspend', entityType: 'User', entityId: userId, data: { reason, closedSessions: closed } }, tx);
+    });
     return this.adminGet(userId);
   }
 
-  async adminReactivate(actorId: string, userId: string, reason: string) {
+  /** Réactivation : mêmes règles que la suspension, et seul un administrateur lève une suspension décidée par un administrateur. */
+  async adminReactivate(actor: { id: string; roles: Role[] }, userId: string, reason: string) {
     const target = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!target) throw new NotFoundException({ code: 'USER_NOT_FOUND', message: 'Utilisateur introuvable' });
     if (target.status !== 'SUSPENDED') {
-      throw new BadRequestException({ code: 'NOT_SUSPENDED', message: 'Ce compte n’est pas suspendu' });
+      throw new ConflictException({ code: 'USER_NOT_SUSPENDED', message: 'Ce compte n’est pas suspendu' });
     }
-    await this.prisma.user.update({ where: { id: userId }, data: { status: 'ACTIVE', suspendedReason: null } });
-    await this.audit.log({ actorId, action: 'user.reactivate', entityType: 'User', entityId: userId, data: { reason } });
+    const isAdmin = actor.roles.includes('ADMIN');
+    if (target.roles.some(isInternal) && !isAdmin) {
+      throw new ForbiddenException({ code: 'ADMIN_CANNOT_REACTIVATE_STAFF', message: 'Seul un administrateur peut réactiver un membre de l’équipe' });
+    }
+    if (!isAdmin && target.suspendedById) {
+      const suspender = await this.prisma.user.findUnique({ where: { id: target.suspendedById }, select: { roles: true } });
+      if (suspender?.roles.includes('ADMIN')) {
+        throw new ForbiddenException({ code: 'ADMIN_SUSPENSION_LOCKED', message: 'Cette suspension a été décidée par un administrateur : seul un administrateur peut la lever' });
+      }
+    }
+    const restored: UserStatus = target.deletionRequestedAt ? 'DELETION_PENDING' : 'ACTIVE';
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({ where: { id: userId }, data: { status: restored, suspendedReason: null, suspendedById: null } });
+      await this.audit.log({ actorId: actor.id, action: 'user.reactivate', entityType: 'User', entityId: userId, data: { reason, restoredStatus: restored } }, tx);
+    });
     return this.adminGet(userId);
   }
 
@@ -205,17 +241,19 @@ export class UsersService {
     if (!target) throw new NotFoundException({ code: 'USER_NOT_FOUND', message: 'Utilisateur introuvable' });
     const wanted = [...new Set(roles)];
     if (actorId === userId && !wanted.includes('ADMIN')) {
-      throw new ForbiddenException({ code: 'CANNOT_REMOVE_OWN_ADMIN', message: 'Tu ne peux pas retirer ton propre rôle d’administrateur' });
+      throw new ForbiddenException({ code: 'ADMIN_CANNOT_REMOVE_OWN_ADMIN', message: 'Tu ne peux pas retirer ton propre rôle d’administrateur' });
     }
     const kept = target.roles.filter((r) => !isInternal(r));
     const next = [...kept, ...wanted];
-    await this.prisma.user.update({ where: { id: userId }, data: { roles: next } });
-    await this.audit.log({
-      actorId,
-      action: 'user.roles',
-      entityType: 'User',
-      entityId: userId,
-      data: { before: target.roles, after: next, reason },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({ where: { id: userId }, data: { roles: next } });
+      await this.audit.log({
+        actorId,
+        action: 'user.roles',
+        entityType: 'User',
+        entityId: userId,
+        data: { before: target.roles, after: next, reason },
+      }, tx);
     });
     return this.adminGet(userId);
   }

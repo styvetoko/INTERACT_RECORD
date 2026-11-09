@@ -65,7 +65,7 @@ En cas de contradiction entre deux sources, on s'arrête et on demande. On ne tr
 | Couche | Choix | Dossier |
 | --- | --- | --- |
 | API | NestJS 11, TypeScript 5.9, Prisma 6, PostgreSQL 16 | `apps/api` |
-| Web public, PWA, back-office | Next.js (React, TypeScript) | `apps/web` (à venir) |
+| Web public, PWA, back-office | Next.js 15 (React 19, TypeScript) | `apps/web` |
 | Mobile Android et iOS | Flutter | `apps/mobile` (à venir) |
 | Jetons de design | JSON, générés vers CSS et Dart | `packages/design-tokens` |
 | Intégration continue | GitHub Actions | `.github/workflows` |
@@ -109,4 +109,6 @@ Le détail est dans le skill `git-livraison`.
 ## État du projet
 
 - J1 livré : socle de l'API (comptes, sessions, PIN, disciplines configurables, artistes, audit).
-- Prochain : J2, vitrine des artistes et back-office minimal.
+- J2 livré sur la branche `feat/j2-vitrine-backoffice` : vitrine (API et web), back-office (API),
+  corrections des revues de sécurité et de qualité. Écrans du back-office : à faire.
+- Prochain : J3, publication des œuvres et traitement des médias audio et vidéo.

@@ -61,3 +61,14 @@ organisateurs et marques me prennent au sérieux.
 Œuvres, onglets de contenus et œuvre épinglée (J3), abonnés et mur des supporters (J4-J5),
 dossier de presse PDF (phase 2), gestion des membres et managers (J8), interface du back-office
 (l'API est livrée, les écrans suivent).
+
+## Bilan
+
+- Revue de sécurité : 4 problèmes graves, 6 moyens, 5 faibles. Tous corrigés et prouvés par un test,
+  sauf F5 (profils publics de mineurs), qui attend une décision du CEO et du juriste.
+- Recette qualité : 9 défauts. Tous corrigés ; la suite de recette est devenue la suite de
+  non-régression `apps/api/test/j2-regressions.e2e-spec.ts`.
+- Web vérifié en captures sur mobile (390 px) et sur ordinateur (1440 px), en français et en anglais :
+  une page inconnue renvoie bien 404, toutes les cibles tactiles mesurent au moins 44 px.
+- Non vérifié : vrai téléphone Android d'entrée de gamme en 3G réelle, lecteurs d'écran
+  TalkBack et VoiceOver, photos HEIC d'iPhone (refusées : seul l'AVIF est accepté).

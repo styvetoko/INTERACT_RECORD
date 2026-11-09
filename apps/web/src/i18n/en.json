@@ -1,0 +1,74 @@
+{
+  "site": {
+    "name": "INTERACT Stage",
+    "description": "The stage for African artists: discover, support and book Cameroon’s finest talent.",
+    "skipToContent": "Skip to content"
+  },
+  "nav": {
+    "discover": "Discover",
+    "home": "Home"
+  },
+  "lang": {
+    "switchTo": "Français",
+    "label": "Change language"
+  },
+  "home": {
+    "eyebrow": "Music · Comedy · Dance · Painting",
+    "title": "Africa’s talent, closer than ever.",
+    "subtitle": "Discover artists from Cameroon, support them directly and book them for your events.",
+    "sectionCount": {
+      "one": "{count} artist",
+      "other": "{count} artists"
+    },
+    "seeAll": "See all",
+    "emptyTitle": "The stage is getting ready",
+    "emptyBody": "The first artists are on their way. Come back soon.",
+    "unavailableTitle": "We couldn’t load the artists",
+    "unavailableBody": "Check your connection and try again."
+  },
+  "artist": {
+    "verified": "Verified artist",
+    "collective": "Collective",
+    "members": {
+      "one": "{count} member",
+      "other": "{count} members"
+    },
+    "about": "About",
+    "noBio": "This artist hasn’t written a bio yet.",
+    "links": "On social media",
+    "since": "On INTERACT Stage since {date}",
+    "booking": {
+      "title": "Book",
+      "from": "From",
+      "range": "{min} to {max}",
+      "travel": "Travels to",
+      "services": "Services",
+      "rider": "Technical rider",
+      "cta": "Request a booking",
+      "soon": "Online booking is coming soon.",
+      "notBookable": "This artist isn’t taking bookings right now."
+    },
+    "share": {
+      "title": "Share",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "qrAlt": "QR code linking to {name}’s page",
+      "download": "Download QR code",
+      "hint": "Print it on your posters and flyers."
+    },
+    "website": "Website"
+  },
+  "notFound": {
+    "title": "This page doesn’t exist",
+    "body": "The artist may have changed their name, or the link is incomplete.",
+    "cta": "Back to home"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "body": "It’s not you, it’s us. Please try again in a moment.",
+    "retry": "Try again"
+  },
+  "footer": {
+    "rights": "© {year} INTERACT Stage. Proudly made in Cameroon."
+  }
+}

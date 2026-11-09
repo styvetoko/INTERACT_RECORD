@@ -9,3 +9,6 @@ coverage/
 .DS_Store
 .turbo/
 .storage/
+next-env.d.ts
+*.tsbuildinfo
+.env.local

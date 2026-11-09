@@ -1,0 +1,74 @@
+{
+  "site": {
+    "name": "INTERACT Stage",
+    "description": "La scène des artistes africains : découvre, soutiens et réserve les talents du Cameroun.",
+    "skipToContent": "Aller au contenu"
+  },
+  "nav": {
+    "discover": "Découvrir",
+    "home": "Accueil"
+  },
+  "lang": {
+    "switchTo": "English",
+    "label": "Changer de langue"
+  },
+  "home": {
+    "eyebrow": "Musique · Humour · Danse · Peinture",
+    "title": "Les talents d’Afrique, au plus près de toi.",
+    "subtitle": "Découvre les artistes du Cameroun, soutiens-les directement et réserve-les pour tes événements.",
+    "sectionCount": {
+      "one": "{count} artiste",
+      "other": "{count} artistes"
+    },
+    "seeAll": "Tout voir",
+    "emptyTitle": "La scène se prépare",
+    "emptyBody": "Les premiers artistes arrivent. Reviens très vite.",
+    "unavailableTitle": "Impossible de charger les artistes",
+    "unavailableBody": "Vérifie ta connexion puis réessaie."
+  },
+  "artist": {
+    "verified": "Artiste vérifié",
+    "collective": "Collectif",
+    "members": {
+      "one": "{count} membre",
+      "other": "{count} membres"
+    },
+    "about": "À propos",
+    "noBio": "Cet artiste n’a pas encore écrit sa biographie.",
+    "links": "Sur les réseaux",
+    "since": "Sur INTERACT Stage depuis {date}",
+    "booking": {
+      "title": "Réserver",
+      "from": "À partir de",
+      "range": "De {min} à {max}",
+      "travel": "Se déplace à",
+      "services": "Prestations",
+      "rider": "Fiche technique",
+      "cta": "Demander une réservation",
+      "soon": "La réservation en ligne arrive bientôt.",
+      "notBookable": "Cet artiste ne prend pas de réservation pour le moment."
+    },
+    "share": {
+      "title": "Partager",
+      "copy": "Copier le lien",
+      "copied": "Lien copié",
+      "qrAlt": "QR code menant à la page de {name}",
+      "download": "Télécharger le QR code",
+      "hint": "Imprime-le sur tes affiches et flyers."
+    },
+    "website": "Site web"
+  },
+  "notFound": {
+    "title": "Cette page n’existe pas",
+    "body": "L’artiste a peut-être changé de nom, ou le lien est incomplet.",
+    "cta": "Retour à l’accueil"
+  },
+  "error": {
+    "title": "Quelque chose s’est mal passé",
+    "body": "Ce n’est pas toi, c’est nous. Réessaie dans un instant.",
+    "retry": "Réessayer"
+  },
+  "footer": {
+    "rights": "© {year} INTERACT Stage. Fait avec fierté au Cameroun."
+  }
+}

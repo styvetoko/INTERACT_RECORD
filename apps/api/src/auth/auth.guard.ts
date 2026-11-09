@@ -58,7 +58,7 @@ export class AuthGuard implements CanActivate {
 
     const required = this.reflector.getAllAndOverride<Role[] | undefined>(ROLES, targets);
     if (required?.length && !required.some((r) => user.roles.includes(r))) {
-      throw new ForbiddenException({ code: 'FORBIDDEN', message: 'Accès refusé' });
+      throw new ForbiddenException({ code: 'AUTH_FORBIDDEN', message: 'Accès refusé' });
     }
     return true;
   }

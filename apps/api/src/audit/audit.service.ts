@@ -38,6 +38,14 @@ export class AuditService {
       orderBy: newestFirst,
       take: query.limit + 1,
     });
-    return toPage(rows, query.limit, (r) => r);
+    return toPage(rows, query.limit, (r) => ({
+      id: r.id,
+      actorId: r.actorId,
+      action: r.action,
+      entityType: r.entityType,
+      entityId: r.entityId,
+      data: r.data,
+      createdAt: r.createdAt,
+    }));
   }
 }

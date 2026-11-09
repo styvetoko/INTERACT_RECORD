@@ -6,6 +6,22 @@ Toutes les évolutions visibles d'INTERACT Stage, écrites pour un lecteur non t
 
 ### Ajouté
 
+- Vitrine des artistes sur le web : accueil par discipline, page d'artiste (bannière, photo, badge
+  vérifié, disciplines, biographie, liens, fiche booking, QR code à imprimer), en français et en
+  anglais, thème sombre, aperçu riche au partage sur WhatsApp et les réseaux.
+- Photos et bannières : traitement automatique, suppression des métadonnées et de la position GPS,
+  formats légers pour la 3G, couleur et aperçu flou pendant le chargement.
+- Fiche booking, jauge de complétude du profil, catégories modifiables, annuaire filtrable.
+- Back-office : recherche des comptes, suspension et réactivation avec motif, rôles de l'équipe,
+  badge artiste vérifié, journal d'audit consultable.
+
+### Sécurité
+
+- Revue de sécurité et recette qualité du J2 : 4 problèmes graves, 6 moyens et 5 faibles corrigés,
+  chacun prouvé par un test (144 tests au total).
+- Mise à jour des bibliothèques vulnérables (traitement d'images, réception de fichiers, validation),
+  contrôle automatique des failles dans l'intégration continue (ADR-0008).
+
 - Organisation de l'équipe : 10 rôles, matrice de décision, circuit de livraison (`docs/organisation.md`).
 - Charte de travail (`CLAUDE.md`) et 9 savoir-faire détaillés (`.claude/skills/`).
 - Identité visuelle v0.1 sous forme de jetons de design (couleurs, typographies, animations), à valider.

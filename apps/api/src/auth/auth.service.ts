@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { env } from '../config/env';
 import { hashSecret, randomDigits, randomToken, sha256, verifySecret } from '../common/crypto';
 import { TooManyRequestsError } from '../common/http-errors';
@@ -174,8 +174,8 @@ export class AuthService {
   }
 
   /** Ferme toutes les sessions d'un utilisateur (suspension, demande de suppression). */
-  async revokeAllSessions(userId: string): Promise<number> {
-    const result = await this.prisma.session.updateMany({
+  async revokeAllSessions(userId: string, tx: Prisma.TransactionClient = this.prisma): Promise<number> {
+    const result = await tx.session.updateMany({
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },
     });

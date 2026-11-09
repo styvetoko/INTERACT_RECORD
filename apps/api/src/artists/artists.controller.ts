@@ -1,7 +1,9 @@
 import {
-  Body, Controller, Delete, Get, Header, HttpCode, Param, Patch, Post, Put, Query,
-  UnprocessableEntityException, UploadedFile, UseInterceptors,
+  BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Res,
+  UploadedFile, UseInterceptors,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
+import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ArtistType, ImagePurpose } from '@prisma/client';
 import { z } from 'zod';
@@ -32,6 +34,7 @@ const UpdateArtistSchema = z
     bioEn: z.string().trim().max(2000).nullable(),
     tagline: z.string().trim().max(80).nullable(),
     socialLinks: SocialLinksPatchSchema,
+    categorySlugs: z.array(z.string()).max(10),
   })
   .partial()
   .strict();
@@ -44,11 +47,16 @@ const ListArtistsSchema = PageQuerySchema.extend({
 
 const VerificationSchema = z.object({ verified: z.boolean(), reason: z.string().trim().min(5).max(500) });
 
-const uploadOptions = { limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 } };
+/** Un seul fichier, aucun champ texte : rien d'autre n'est lu en mémoire. */
+const uploadOptions = {
+  limits: { fileSize: MAX_UPLOAD_BYTES, files: 1, fields: 0, parts: 1, fieldSize: 1024, fieldNameSize: 100, headerPairs: 50 },
+};
+/** Envois d'images : 30 par heure, le traitement est coûteux. */
+const UPLOAD_THROTTLE = { default: { limit: 30, ttl: 60 * 60_000 } };
 
 function requireFile(file: Express.Multer.File | undefined): Buffer {
   if (!file?.buffer?.length) {
-    throw new UnprocessableEntityException({ code: 'FILE_MISSING', message: 'Ajoute un fichier dans le champ « file »' });
+    throw new BadRequestException({ code: 'FILE_MISSING', message: 'Ajoute un fichier dans le champ « file »' });
   }
   return file.buffer;
 }
@@ -82,10 +90,13 @@ export class ArtistsController {
 
   @Public()
   @Get('artists/:slug/qr.svg')
-  @Header('Content-Type', 'image/svg+xml; charset=utf-8')
-  @Header('Cache-Control', 'public, max-age=86400')
-  qr(@Param('slug') slug: string) {
-    return this.artists.qrCodeSvg(slug);
+  async qr(@Param('slug') slug: string, @Res({ passthrough: true }) res: Response) {
+    const svg = await this.artists.qrCodeSvg(slug);
+    // En-têtes posés seulement en cas de succès : une erreur reste du JSON.
+    res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    return svg;
   }
 
   @Get('artists/:slug/manage')
@@ -104,12 +115,14 @@ export class ArtistsController {
   }
 
   @Put('artists/:slug/avatar')
+  @Throttle(UPLOAD_THROTTLE)
   @UseInterceptors(UploadErrorsInterceptor, FileInterceptor('file', uploadOptions))
   setAvatar(@CurrentUser() user: AuthUser, @Param('slug') slug: string, @UploadedFile() file?: Express.Multer.File) {
     return this.artists.setImage(user.id, slug, ImagePurpose.ARTIST_AVATAR, requireFile(file));
   }
 
   @Put('artists/:slug/banner')
+  @Throttle(UPLOAD_THROTTLE)
   @UseInterceptors(UploadErrorsInterceptor, FileInterceptor('file', uploadOptions))
   setBanner(@CurrentUser() user: AuthUser, @Param('slug') slug: string, @UploadedFile() file?: Express.Multer.File) {
     return this.artists.setImage(user.id, slug, ImagePurpose.ARTIST_BANNER, requireFile(file));

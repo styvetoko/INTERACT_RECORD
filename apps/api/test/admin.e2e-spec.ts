@@ -12,11 +12,20 @@ describe('Back-office (ADM-01, ADM-10, ACC-06)', () => {
       const local = target.phone.replace('+237', '').replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4');
       const r = await ctx.http().get(`/v1/admin/users?q=${encodeURIComponent(local)}`).set(bearer(support.accessToken)).expect(200);
       expect(r.body.items).toHaveLength(1);
-      expect(r.body.items[0]).toMatchObject({ id: target.user.id, phone: target.phone });
+      // Liste : numéro masqué ; fiche : numéro complet, consultation tracée.
+      expect(r.body.items[0]).toMatchObject({ id: target.user.id, phone: `${target.phone.slice(0, 7)}***${target.phone.slice(-3)}` });
       expect(r.body.items[0]).not.toHaveProperty('pinHash');
+      const detail = await ctx.http().get(`/v1/admin/users/${target.user.id}`).set(bearer(support.accessToken)).expect(200);
+      expect(detail.body.phone).toBe(target.phone);
+      const actions = (await ctx.prisma.auditLog.findMany({ where: { actorId: support.user.id } })).map((l) => l.action);
+      expect(actions).toEqual(expect.arrayContaining(['user.search', 'user.view']));
+      const search = await ctx.prisma.auditLog.findFirst({ where: { actorId: support.user.id, action: 'user.search' } });
+      expect(JSON.stringify(search?.data)).not.toContain(target.phone);
     });
 
-    it('est interdite aux fans et aux artistes', async () => {
+    it('est interdite aux modérateurs, aux fans et aux artistes', async () => {
+      const mod = await loginWithRoles(ctx, ['MODERATOR']);
+      await ctx.http().get('/v1/admin/users').set(bearer(mod.accessToken)).expect(403);
       const fan = await login(ctx);
       await ctx.http().get('/v1/admin/users').set(bearer(fan.accessToken)).expect(403);
       await ctx.http().get('/v1/admin/users').expect(401);
@@ -36,7 +45,8 @@ describe('Back-office (ADM-01, ADM-10, ACC-06)', () => {
       const log = await ctx.prisma.auditLog.findFirst({ where: { action: 'user.suspend', entityId: target.user.id } });
       expect(log).toMatchObject({ actorId: mod.user.id, data: expect.objectContaining({ reason: 'Arnaque signalée par 3 fans' }) });
 
-      await ctx.http().post(`/v1/admin/users/${target.user.id}/suspend`).set(bearer(mod.accessToken)).send({ reason: 'Encore une fois' }).expect(400);
+      const again = await ctx.http().post(`/v1/admin/users/${target.user.id}/suspend`).set(bearer(mod.accessToken)).send({ reason: 'Encore une fois' }).expect(409);
+      expect(again.body.code).toBe('USER_ALREADY_SUSPENDED');
       const back = await ctx.http().post(`/v1/admin/users/${target.user.id}/reactivate`).set(bearer(mod.accessToken))
         .send({ reason: 'Erreur de signalement vérifiée' }).expect(200);
       expect(back.body).toMatchObject({ status: 'ACTIVE', suspendedReason: null });
@@ -53,14 +63,14 @@ describe('Back-office (ADM-01, ADM-10, ACC-06)', () => {
     it('interdit de se suspendre soi-même', async () => {
       const admin = await loginWithRoles(ctx, ['ADMIN']);
       const r = await ctx.http().post(`/v1/admin/users/${admin.user.id}/suspend`).set(bearer(admin.accessToken)).send({ reason: 'Test de sécurité' }).expect(403);
-      expect(r.body.code).toBe('CANNOT_SUSPEND_SELF');
+      expect(r.body.code).toBe('ADMIN_CANNOT_SUSPEND_SELF');
     });
 
     it('un modérateur ne peut pas suspendre un membre de l’équipe ; un administrateur le peut', async () => {
       const mod = await loginWithRoles(ctx, ['MODERATOR']);
       const finance = await loginWithRoles(ctx, ['FINANCE']);
       const r = await ctx.http().post(`/v1/admin/users/${finance.user.id}/suspend`).set(bearer(mod.accessToken)).send({ reason: 'Abus de pouvoir' }).expect(403);
-      expect(r.body.code).toBe('CANNOT_SUSPEND_STAFF');
+      expect(r.body.code).toBe('ADMIN_CANNOT_SUSPEND_STAFF');
       const admin = await loginWithRoles(ctx, ['ADMIN']);
       await ctx.http().post(`/v1/admin/users/${finance.user.id}/suspend`).set(bearer(admin.accessToken)).send({ reason: 'Départ de l’entreprise' }).expect(200);
     });
@@ -95,7 +105,7 @@ describe('Back-office (ADM-01, ADM-10, ACC-06)', () => {
     it('empêche un administrateur de retirer son propre rôle', async () => {
       const admin = await loginWithRoles(ctx, ['ADMIN']);
       const r = await ctx.http().put(`/v1/admin/users/${admin.user.id}/roles`).set(bearer(admin.accessToken)).send({ roles: ['SUPPORT'], reason: 'Erreur de manipulation' }).expect(403);
-      expect(r.body.code).toBe('CANNOT_REMOVE_OWN_ADMIN');
+      expect(r.body.code).toBe('ADMIN_CANNOT_REMOVE_OWN_ADMIN');
     });
 
     it('est réservé aux administrateurs', async () => {

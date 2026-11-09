@@ -14,6 +14,13 @@ const schema = z.object({
   STORAGE_DIR: z.string().min(1).default('.storage'),
   PUBLIC_MEDIA_URL: z.string().url().default('http://localhost:4000/media'),
   PUBLIC_WEB_URL: z.string().url().default('http://localhost:3000'),
+}).superRefine((c, ctx) => {
+  // En production, aucun faux fournisseur : l'API refuse de démarrer plutôt que de simuler.
+  if (c.NODE_ENV === 'production') {
+    for (const key of ['SMS_PROVIDER', 'PAYMENT_PROVIDER', 'STORAGE_PROVIDER'] as const) {
+      if (c[key] === 'fake') ctx.addIssue({ code: 'custom', path: [key], message: 'faux fournisseur interdit en production' });
+    }
+  }
 });
 
 export type Env = z.infer<typeof schema>;

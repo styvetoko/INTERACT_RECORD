@@ -65,7 +65,7 @@ describe('Vitrine des artistes (PRO-01, PRO-04, PRO-06, parcours 7.2)', () => {
       expect(small.body.code).toBe('IMAGE_TOO_SMALL');
       const heavy = await ctx.http().put(`/v1/artists/${slug}/avatar`).set(bearer(owner.accessToken)).attach('file', Buffer.alloc(16 * 1024 * 1024, 1), 'lourd.jpg').expect(413);
       expect(heavy.body.code).toBe('FILE_TOO_LARGE');
-      const missing = await ctx.http().put(`/v1/artists/${slug}/avatar`).set(bearer(owner.accessToken)).expect(422);
+      const missing = await ctx.http().put(`/v1/artists/${slug}/avatar`).set(bearer(owner.accessToken)).expect(400);
       expect(missing.body.code).toBe('FILE_MISSING');
     });
 
@@ -80,7 +80,8 @@ describe('Vitrine des artistes (PRO-01, PRO-04, PRO-06, parcours 7.2)', () => {
       const removed = await ctx.http().delete(`/v1/artists/${slug}/avatar`).set(bearer(owner.accessToken)).expect(200);
       expect(removed.body.avatar).toBeNull();
       expect(existsSync(newFile)).toBe(false);
-      expect(await ctx.prisma.mediaImage.count({ where: { ownerUserId: owner.user.id, purpose: 'ARTIST_AVATAR' } })).toBe(0);
+      expect(await ctx.prisma.mediaImage.count({ where: { uploadedById: owner.user.id, purpose: 'ARTIST_AVATAR' } })).toBe(0);
+      expect(await ctx.prisma.storageDeletion.count()).toBe(0);
     });
 
     it('interdit à un autre utilisateur de changer les images', async () => {
@@ -98,7 +99,7 @@ describe('Vitrine des artistes (PRO-01, PRO-04, PRO-06, parcours 7.2)', () => {
         socialLinks: { instagram: 'https://www.instagram.com/ernest', youtube: 'https://youtu.be/abc', website: 'https://ernest.art' },
       }).expect(200);
       expect(r.body.tagline).toBe('Peintre de la lumière de Douala');
-      expect(r.body.socialLinks).toEqual({ instagram: 'https://www.instagram.com/ernest', youtube: 'https://youtu.be/abc', website: 'https://ernest.art' });
+      expect(r.body.socialLinks).toEqual({ instagram: 'https://www.instagram.com/ernest', youtube: 'https://youtu.be/abc', website: 'https://ernest.art/' });
 
       const r2 = await ctx.http().patch(`/v1/artists/${slug}`).set(bearer(owner.accessToken)).send({ socialLinks: { youtube: null } }).expect(200);
       expect(Object.keys(r2.body.socialLinks).sort()).toEqual(['instagram', 'website']);

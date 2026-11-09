@@ -1,0 +1,31 @@
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-6);
+  border-radius: var(--radius-xl);
+  border: 1px dashed var(--color-border-strong);
+  background: var(--color-surface-1);
+  text-align: center;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-3);
+  color: var(--color-brand-gold);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: var(--leading-xl);
+}
+
+.body {
+  max-width: 42ch;
+  color: var(--color-text-secondary);
+}
