@@ -5,6 +5,7 @@ import { env } from '../config/env';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
+import { UserThrottlerGuard } from './user-throttler.guard';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { AuthService } from './auth.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, { provide: APP_GUARD, useClass: AuthGuard }],
+  // Ordre voulu : authentification d'abord, puis limites de débit comptées par utilisateur.
+  providers: [AuthService, { provide: APP_GUARD, useClass: AuthGuard }, { provide: APP_GUARD, useClass: UserThrottlerGuard }],
   exports: [AuthService],
 })
 export class AuthModule {}

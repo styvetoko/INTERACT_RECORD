@@ -1,4 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import type { Request, Response } from 'express';
 
@@ -44,13 +45,30 @@ export class ApiExceptionFilter implements ExceptionFilter {
     }
 
     const requestId = randomUUID();
-    this.logger.error(
-      `${requestId} ${req.method} ${req.path} : ${exception instanceof Error ? exception.stack ?? exception.message : String(exception)}`,
-    );
+    this.logger.error(`${requestId} ${req.method} ${req.path} : ${describeForLogs(exception)}`);
     res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       code: 'INTERNAL_ERROR',
       message: 'Une erreur est survenue. Réessaie dans un instant.',
       requestId,
     });
   }
+}
+
+/**
+ * Les erreurs Prisma recopient les valeurs de la requête (numéros, e-mails) : on n'en journalise
+ * que le type, le code et les champs concernés, jamais les valeurs.
+ */
+export function describeForLogs(exception: unknown): string {
+  if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+    return `Prisma ${exception.code} ${JSON.stringify(exception.meta ?? {})}`;
+  }
+  if (
+    exception instanceof Prisma.PrismaClientValidationError ||
+    exception instanceof Prisma.PrismaClientUnknownRequestError ||
+    exception instanceof Prisma.PrismaClientRustPanicError ||
+    exception instanceof Prisma.PrismaClientInitializationError
+  ) {
+    return `Prisma ${exception.name} (détail masqué)`;
+  }
+  return exception instanceof Error ? exception.stack ?? exception.message : String(exception);
 }

@@ -203,7 +203,7 @@ export class UsersService {
     }
     // Une demande de suppression en cours est conservée (deletionRequestedAt) et restaurée à la réactivation.
     await this.prisma.$transaction(async (tx) => {
-      await tx.user.update({ where: { id: userId }, data: { status: 'SUSPENDED', suspendedReason: reason, suspendedById: actor.id } });
+      await tx.user.update({ where: { id: userId }, data: { status: 'SUSPENDED', suspendedReason: reason, suspendedById: actor.id, suspendedByAdmin: actor.roles.includes('ADMIN') } });
       const closed = await this.auth.revokeAllSessions(userId, tx);
       await this.audit.log({ actorId: actor.id, action: 'user.suspend', entityType: 'User', entityId: userId, data: { reason, closedSessions: closed } }, tx);
     });
@@ -221,15 +221,13 @@ export class UsersService {
     if (target.roles.some(isInternal) && !isAdmin) {
       throw new ForbiddenException({ code: 'ADMIN_CANNOT_REACTIVATE_STAFF', message: 'Seul un administrateur peut réactiver un membre de l’équipe' });
     }
-    if (!isAdmin && target.suspendedById) {
-      const suspender = await this.prisma.user.findUnique({ where: { id: target.suspendedById }, select: { roles: true } });
-      if (suspender?.roles.includes('ADMIN')) {
-        throw new ForbiddenException({ code: 'ADMIN_SUSPENSION_LOCKED', message: 'Cette suspension a été décidée par un administrateur : seul un administrateur peut la lever' });
-      }
+    // Le verrou dépend de qui était administrateur AU MOMENT de la suspension, pas aujourd'hui.
+    if (!isAdmin && target.suspendedByAdmin) {
+      throw new ForbiddenException({ code: 'ADMIN_SUSPENSION_LOCKED', message: 'Cette suspension a été décidée par un administrateur : seul un administrateur peut la lever' });
     }
     const restored: UserStatus = target.deletionRequestedAt ? 'DELETION_PENDING' : 'ACTIVE';
     await this.prisma.$transaction(async (tx) => {
-      await tx.user.update({ where: { id: userId }, data: { status: restored, suspendedReason: null, suspendedById: null } });
+      await tx.user.update({ where: { id: userId }, data: { status: restored, suspendedReason: null, suspendedById: null, suspendedByAdmin: false } });
       await this.audit.log({ actorId: actor.id, action: 'user.reactivate', entityType: 'User', entityId: userId, data: { reason, restoredStatus: restored } }, tx);
     });
     return this.adminGet(userId);

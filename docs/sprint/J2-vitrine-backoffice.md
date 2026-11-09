@@ -66,6 +66,8 @@ dossier de presse PDF (phase 2), gestion des membres et managers (J8), interface
 
 - Revue de sécurité : 4 problèmes graves, 6 moyens, 5 faibles. Tous corrigés et prouvés par un test,
   sauf F5 (profils publics de mineurs), qui attend une décision du CEO et du juriste.
+- Contre-vérification de sécurité : aucun blocage ; N1 à N5 corrigés ; M6 et F4 complétés autant que possible
+  sans planificateur (voir docs/avant-production.md).
 - Recette qualité : 9 défauts. Tous corrigés ; la suite de recette est devenue la suite de
   non-régression `apps/api/test/j2-regressions.e2e-spec.ts`.
 - Web vérifié en captures sur mobile (390 px) et sur ordinateur (1440 px), en français et en anglais :

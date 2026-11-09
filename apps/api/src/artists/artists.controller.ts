@@ -20,8 +20,8 @@ const CreateArtistSchema = z.object({
   stageName: z.string().trim().min(2).max(60),
   city: z.string().trim().min(2).max(80),
   type: z.nativeEnum(ArtistType).default('INDIVIDUAL'),
-  disciplineSlugs: z.array(z.string()).min(1).max(MAX_DISCIPLINES_PER_ARTIST),
-  categorySlugs: z.array(z.string()).max(10).default([]),
+  disciplineSlugs: z.array(z.string().max(40)).min(1).max(MAX_DISCIPLINES_PER_ARTIST),
+  categorySlugs: z.array(z.string().max(80)).max(10).default([]),
   bioFr: z.string().trim().max(2000).optional(),
   bioEn: z.string().trim().max(2000).optional(),
 });
@@ -34,7 +34,7 @@ const UpdateArtistSchema = z
     bioEn: z.string().trim().max(2000).nullable(),
     tagline: z.string().trim().max(80).nullable(),
     socialLinks: SocialLinksPatchSchema,
-    categorySlugs: z.array(z.string()).max(10),
+    categorySlugs: z.array(z.string().max(80)).max(10),
   })
   .partial()
   .strict();

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { ArtistsModule } from './artists/artists.module';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
@@ -16,7 +15,8 @@ import { UsersModule } from './users/users.module';
   imports: [
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 120 }],
-      skipIf: () => env().NODE_ENV === 'test',
+      // Coupées en test, sauf dans la suite qui les vérifie (ENABLE_THROTTLE_IN_TESTS=1).
+      skipIf: () => env().NODE_ENV === 'test' && process.env.ENABLE_THROTTLE_IN_TESTS !== '1',
     }),
     PrismaModule,
     AuditModule,
@@ -28,6 +28,5 @@ import { UsersModule } from './users/users.module';
     ArtistsModule,
   ],
   controllers: [HealthController],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

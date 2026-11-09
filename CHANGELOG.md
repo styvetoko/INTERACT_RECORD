@@ -19,6 +19,9 @@ Toutes les évolutions visibles d'INTERACT Stage, écrites pour un lecteur non t
 
 - Revue de sécurité et recette qualité du J2 : 4 problèmes graves, 6 moyens et 5 faibles corrigés,
   chacun prouvé par un test (144 tests au total).
+- Contre-vérification de sécurité : rien ne bloque ; 5 points faibles supplémentaires corrigés
+  (verrou de suspension figé, limites de débit par utilisateur, journaux sans données personnelles,
+  file des images, démarrage impossible sans environnement déclaré). 152 tests.
 - Mise à jour des bibliothèques vulnérables (traitement d'images, réception de fichiers, validation),
   contrôle automatique des failles dans l'intégration continue (ADR-0008).
 

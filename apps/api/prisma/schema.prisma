@@ -68,6 +68,8 @@ model User {
   suspendedReason     String?
   /// Qui a prononcé la suspension : seul un administrateur lève une suspension décidée par un administrateur
   suspendedById       String?      @db.Uuid
+  /// La suspension a été prononcée par un administrateur : figé au moment de la décision
+  suspendedByAdmin    Boolean      @default(false)
   kycLevel            Int          @default(0)
   birthYear           Int?
   deletionRequestedAt DateTime?

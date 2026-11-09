@@ -24,7 +24,8 @@ Une plateforme qui traite des fichiers d'inconnus et de l'argent ne peut pas les
    parents embarqueront ces versions.
 5. **Risques acceptés**, ignorés explicitement et à réexaminer à chaque montée de Prisma ou Jest :
    - GHSA-ggr8-5vv4-36mx (deepmerge-ts, élevée) : utilisé par la configuration de la ligne de
-     commande Prisma, qui ne fusionne que notre propre fichier `prisma.config.ts` ; jamais en production.
+     commande Prisma. **Présent dans l'installation de production** (`prisma migrate deploy`), mais
+     **jamais exposé aux entrées des utilisateurs** : il ne fusionne que notre propre `prisma.config.ts`.
    - GHSA-gcqx-w48m-w2h4 (deepmerge, faible) : utilisé par la configuration de Jest ; tests uniquement.
 6. **Défense en profondeur sur les fichiers** : format vérifié sur le contenu, 25 mégapixels
    maximum, une seule passe de décodage, deux traitements simultanés au plus, HEIF accepté

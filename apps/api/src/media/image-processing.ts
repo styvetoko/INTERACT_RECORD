@@ -58,21 +58,29 @@ export interface ProcessedImage {
 let running = 0;
 const waiting: (() => void)[] = [];
 
-async function withImageSlot<T>(job: () => Promise<T>): Promise<T> {
+/**
+ * Exécute un traitement quand une place est libre. Une place libérée passe directement au suivant
+ * de la file : la limite de traitements simultanés n'est jamais dépassée.
+ */
+export async function withImageSlot<T>(job: () => Promise<T>): Promise<T> {
   if (running >= MAX_CONCURRENT_JOBS) {
     if (waiting.length >= MAX_QUEUED_JOBS) {
       throw new ImageRejectedError('MEDIA_BUSY', 'Beaucoup d’envois en ce moment. Réessaie dans une minute.');
     }
-    await new Promise<void>((resolve) => waiting.push(resolve));
+    await new Promise<void>((resolve) => waiting.push(resolve)); // la place nous est transmise
+  } else {
+    running++;
   }
-  running++;
   try {
     return await job();
   } finally {
-    running--;
-    waiting.shift()?.();
+    const next = waiting.shift();
+    if (next) next();
+    else running--;
   }
 }
+
+export const IMAGE_QUEUE_LIMITS = { MAX_CONCURRENT_JOBS, MAX_QUEUED_JOBS };
 
 const hex = (n: number) => Math.round(n).toString(16).padStart(2, '0');
 const open = (input: Buffer) => sharp(input, { limitInputPixels: MAX_INPUT_PIXELS, failOn: 'error' });

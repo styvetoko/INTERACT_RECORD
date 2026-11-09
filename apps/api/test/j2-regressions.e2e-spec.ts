@@ -57,6 +57,14 @@ describe('Non-régression J2', () => {
     expect({ status: r.status, code: r.body.code }).toEqual({ status: 422, code: 'IMAGE_BAD_PROPORTIONS' });
   });
 
+  it('sert les fichiers avec l’en-tête nosniff', async () => {
+    const u = await login(ctx);
+    const { slug } = await createArtist(ctx, u.accessToken, { stageName: 'En Tete Nosniff', city: 'Douala', disciplineSlugs: ['danse'] });
+    const r = await ctx.http().put(`/v1/artists/${slug}/avatar`).set(bearer(u.accessToken)).attach('file', await makeImage(400, 400), 'a.jpg').expect(200);
+    const file = await ctx.http().get(new URL(r.body.avatar.variants[0].url).pathname).expect(200);
+    expect(file.headers['x-content-type-options']).toBe('nosniff');
+  });
+
   it('décline la bannière en 800 et 1600 px au format 3:1', async () => {
     const u = await login(ctx);
     const { slug } = await createArtist(ctx, u.accessToken, { stageName: 'Banniere Ratio', city: 'Douala', disciplineSlugs: ['danse'] });
@@ -169,6 +177,16 @@ describe('Non-régression J2', () => {
     expect(locked.body.code).toBe('ADMIN_SUSPENSION_LOCKED');
     await ctx.http().post(`/v1/admin/users/${b.user.id}/suspend`).set(bearer(mod.accessToken)).send({ reason: 'Spam de commentaires' }).expect(200);
     await ctx.http().post(`/v1/admin/users/${b.user.id}/reactivate`).set(bearer(mod.accessToken)).send({ reason: 'Erreur de ma part' }).expect(200);
+  });
+
+  it('le verrou reste si l’administrateur qui a suspendu perd ensuite son rôle (N1)', async () => {
+    const admin = await loginWithRoles(ctx, ['ADMIN']);
+    const mod = await loginWithRoles(ctx, ['MODERATOR']);
+    const fraudster = await login(ctx);
+    await ctx.http().post(`/v1/admin/users/${fraudster.user.id}/suspend`).set(bearer(admin.accessToken)).send({ reason: 'Fraude au paiement' }).expect(200);
+    await ctx.prisma.user.update({ where: { id: admin.user.id }, data: { roles: ['FAN'] } });
+    const r = await ctx.http().post(`/v1/admin/users/${fraudster.user.id}/reactivate`).set(bearer(mod.accessToken)).send({ reason: 'Plus d’admin, je lève' }).expect(403);
+    expect(r.body.code).toBe('ADMIN_SUSPENSION_LOCKED');
   });
 
   it('une suspension puis une réactivation conservent une demande de suppression en cours (ACC-12)', async () => {
