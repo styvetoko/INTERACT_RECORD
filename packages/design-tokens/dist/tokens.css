@@ -1,0 +1,142 @@
+/* Fichier généré par packages/design-tokens/scripts/build.mjs à partir de tokens.json. Ne pas modifier à la main. */
+
+:root {
+  --color-brand-gold: #F2B544;
+  --color-brand-gold-700: #8F5C00;
+  --color-brand-terracotta: #E8714A;
+  --color-brand-terracotta-700: #B4441F;
+  --color-brand-on-gold: #1A1206;
+  --color-discipline-musique: #F2B544;
+  --color-discipline-humour: #FF7A59;
+  --color-discipline-danse: #EC5FA8;
+  --color-discipline-peinture: #2EC4B6;
+  --color-discipline-autre: #8B7CF6;
+  --gradient-stage: linear-gradient(135deg, #F2B544 0%, #E8714A 100%);
+  --gradient-scrim: linear-gradient(180deg, rgba(11,11,13,0) 0%, rgba(11,11,13,0.85) 100%);
+  --font-display: 'Unbounded Variable', 'Unbounded', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-text: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --text-xs: 0.75rem;
+  --leading-xs: 1rem;
+  --text-sm: 0.875rem;
+  --leading-sm: 1.25rem;
+  --text-md: 1rem;
+  --leading-md: 1.5rem;
+  --text-lg: 1.125rem;
+  --leading-lg: 1.625rem;
+  --text-xl: 1.25rem;
+  --leading-xl: 1.75rem;
+  --text-2xl: 1.5rem;
+  --leading-2xl: 1.875rem;
+  --text-3xl: 1.875rem;
+  --leading-3xl: 2.25rem;
+  --text-4xl: 2.25rem;
+  --leading-4xl: 2.625rem;
+  --text-5xl: 3rem;
+  --leading-5xl: 3.375rem;
+  --text-6xl: 3.75rem;
+  --leading-6xl: 4rem;
+  --space-0: 0rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+  --elevation-light-1: 0 1px 2px rgba(21,19,15,0.06), 0 1px 1px rgba(21,19,15,0.04);
+  --elevation-light-2: 0 4px 12px rgba(21,19,15,0.08), 0 2px 4px rgba(21,19,15,0.04);
+  --elevation-light-3: 0 12px 32px rgba(21,19,15,0.12), 0 4px 8px rgba(21,19,15,0.06);
+  --duration-instant: 80ms;
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 320ms;
+  --duration-slower: 480ms;
+  --duration-celebration: 900ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.3, 0, 1, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+  --size-touch-target: 44px;
+  --size-icon-sm: 16px;
+  --size-icon-md: 20px;
+  --size-icon-lg: 24px;
+  --size-avatar-sm: 32px;
+  --size-avatar-md: 48px;
+  --size-avatar-lg: 96px;
+  --size-avatar-xl: 128px;
+  --size-mini-player: 64px;
+  --size-tab-bar: 64px;
+}
+
+/* Thème sombre : thème par défaut */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #0B0B0D;
+  --color-surface-1: #141417;
+  --color-surface-2: #1C1C21;
+  --color-surface-3: #26262D;
+  --color-border-subtle: #2E2E36;
+  --color-border-strong: #3D3D47;
+  --color-text-primary: #F6F3EC;
+  --color-text-secondary: #B4B0A7;
+  --color-text-tertiary: #8C887F;
+  --color-accent: #F2B544;
+  --color-success: #3DD68C;
+  --color-warning: #F5A524;
+  --color-danger: #FF6B6B;
+  --color-info: #5AA9FF;
+  --color-overlay: rgba(11, 11, 13, 0.72);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #FBF9F5;
+  --color-surface-1: #FFFFFF;
+  --color-surface-2: #F3F0EA;
+  --color-surface-3: #E9E4DA;
+  --color-border-subtle: #E4DFD5;
+  --color-border-strong: #CFC8BB;
+  --color-text-primary: #15130F;
+  --color-text-secondary: #57534B;
+  --color-text-tertiary: #6F6A61;
+  --color-accent: #8F5C00;
+  --color-success: #16794A;
+  --color-warning: #9A5B00;
+  --color-danger: #C62828;
+  --color-info: #1F63C6;
+  --color-overlay: rgba(21, 19, 15, 0.48);
+}
+
+/* Réglage « réduire les animations » : les mouvements deviennent des fondus courts */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 80ms;
+    --duration-fast: 150ms;
+    --duration-base: 150ms;
+    --duration-slow: 150ms;
+    --duration-slower: 150ms;
+    --duration-celebration: 150ms;
+  }
+}
+
+/* Points de rupture (à utiliser dans les media queries) :
+   sm = 360px
+   md = 768px
+   lg = 1024px
+   xl = 1280px
+   2xl = 1536px
+*/

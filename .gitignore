@@ -12,3 +12,6 @@ coverage/
 next-env.d.ts
 *.tsbuildinfo
 .env.local
+
+# Jetons générés : versionnés pour le mobile (Flutter) et contrôlés en intégration continue
+!packages/design-tokens/dist/
