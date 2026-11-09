@@ -173,6 +173,37 @@ export class AuthService {
     });
   }
 
+  /** Ferme toutes les sessions d'un utilisateur (suspension, demande de suppression). */
+  async revokeAllSessions(userId: string): Promise<number> {
+    const result = await this.prisma.session.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    return result.count;
+  }
+
+  /** ACC-10 : appareils connectés. */
+  async listSessions(userId: string, currentSessionId: string) {
+    const sessions = await this.prisma.session.findMany({
+      where: { userId, revokedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { lastUsedAt: 'desc' },
+      select: { id: true, deviceName: true, userAgent: true, createdAt: true, lastUsedAt: true },
+    });
+    return sessions.map((s) => ({ ...s, current: s.id === currentSessionId }));
+  }
+
+  async revokeSession(userId: string, sessionId: string): Promise<boolean> {
+    const result = await this.prisma.session.updateMany({
+      where: { id: sessionId, userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    return result.count > 0;
+  }
+
+  async countActiveSessions(userId: string): Promise<number> {
+    return this.prisma.session.count({ where: { userId, revokedAt: null, expiresAt: { gt: new Date() } } });
+  }
+
   private async openSession(userId: string, client: ClientInfo): Promise<Tokens> {
     const config = env();
     const refreshToken = randomToken(32);

@@ -1,5 +1,8 @@
 import { execSync } from 'child_process';
 import { randomBytes } from 'crypto';
+import { mkdtempSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 /**
  * Chaque exécution des tests travaille dans une base PostgreSQL neuve (interact_test_xxxx),
@@ -11,6 +14,8 @@ export default function globalSetup(): void {
   process.env.TEST_DATABASE_URL = `${server}/${name}`;
   process.env.TEST_DATABASE_NAME = name;
   process.env.TEST_DATABASE_SERVER_URL = server;
+  // Fichiers envoyés pendant les tests : dossier temporaire propre à cette exécution
+  process.env.STORAGE_DIR = mkdtempSync(join(tmpdir(), 'interact-storage-'));
   execSync('npx prisma migrate deploy', {
     cwd: __dirname + '/..',
     env: { ...process.env, DATABASE_URL: process.env.TEST_DATABASE_URL },

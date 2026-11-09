@@ -65,6 +65,7 @@ model User {
   roles               Role[]       @default([FAN])
   status              UserStatus   @default(ACTIVE)
   pinHash             String?
+  suspendedReason     String?
   kycLevel            Int          @default(0)
   birthYear           Int?
   deletionRequestedAt DateTime?
@@ -75,6 +76,7 @@ model User {
   artistMembers  ArtistMember[]
   interests      UserInterest[]
   auditLogs      AuditLog[]     @relation("AuditActor")
+  images         MediaImage[]
 }
 
 /// Code à usage unique envoyé par SMS (ACC-01). Le code n'est jamais stocké en clair.
@@ -156,22 +158,75 @@ model Artist {
   id        String     @id @default(uuid()) @db.Uuid
   slug      String     @unique
   stageName String
+  /// Nom de scène sans accents ni majuscules, pour la recherche (calculé par l'application)
+  searchName String    @default("")
   type      ArtistType @default(INDIVIDUAL)
   country   String     @default("CM")
   city      String
   bioFr     String?
   bioEn     String?
-  avatarUrl String?
-  bannerUrl String?
-  verified  Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  /// Accroche courte affichée sous le nom (80 caractères)
+  tagline   String?
+  /// Liens vers les réseaux, validés par réseau (voir src/artists/social-links.ts)
+  socialLinks   Json       @default("{}")
+  avatarImageId String?    @unique @db.Uuid
+  bannerImageId String?    @unique @db.Uuid
+  verified      Boolean    @default(false)
+  verifiedAt    DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
-  members     ArtistMember[]
-  disciplines ArtistDiscipline[]
-  categories  ArtistCategory[]
+  avatarImage    MediaImage?           @relation("ArtistAvatar", fields: [avatarImageId], references: [id], onDelete: SetNull)
+  bannerImage    MediaImage?           @relation("ArtistBanner", fields: [bannerImageId], references: [id], onDelete: SetNull)
+  members        ArtistMember[]
+  disciplines    ArtistDiscipline[]
+  categories     ArtistCategory[]
+  bookingProfile ArtistBookingProfile?
 
   @@index([city])
+  @@index([searchName])
+  @@index([createdAt, id])
+}
+
+/// Fiche booking (PRO-06). Les prix sont des fourchettes indicatives en FCFA entiers.
+model ArtistBookingProfile {
+  artistId         String   @id @db.Uuid
+  isBookable       Boolean  @default(false)
+  priceMinXaf      Int?
+  priceMaxXaf      Int?
+  travelCities     String[] @default([])
+  serviceTypes     String[] @default([])
+  technicalRider   String?
+  updatedAt        DateTime @updatedAt
+
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+}
+
+enum ImagePurpose {
+  ARTIST_AVATAR
+  ARTIST_BANNER
+}
+
+/// Image traitée : déclinaisons WebP, couleur dominante et aperçu flou (PUB-04, section 11.2)
+model MediaImage {
+  id            String       @id @default(uuid()) @db.Uuid
+  ownerUserId   String       @db.Uuid
+  purpose       ImagePurpose
+  width         Int
+  height        Int
+  dominantColor String
+  /// Aperçu flou très léger (WebP en base64), affiché pendant le chargement
+  placeholder   String
+  /// [{ width, height, key }]
+  variants      Json
+  bytesTotal    Int
+  createdAt     DateTime     @default(now())
+
+  owner          User    @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  artistAvatarOf Artist? @relation("ArtistAvatar")
+  artistBannerOf Artist? @relation("ArtistBanner")
+
+  @@index([ownerUserId])
 }
 
 model ArtistMember {
@@ -223,4 +278,5 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@index([actorId])
+  @@index([createdAt, id])
 }

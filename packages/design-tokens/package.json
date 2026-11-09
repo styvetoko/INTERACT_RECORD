@@ -1,0 +1,16 @@
+{
+  "name": "@interact/design-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Jetons de design INTERACT Stage : source unique des couleurs, typographies, espacements et animations",
+  "main": "tokens.json",
+  "exports": {
+    "./tokens.json": "./tokens.json",
+    "./tokens.css": "./dist/tokens.css",
+    "./tokens.ts": "./dist/tokens.ts"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/build.mjs --check"
+  }
+}

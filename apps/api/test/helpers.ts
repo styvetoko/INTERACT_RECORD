@@ -46,3 +46,16 @@ export async function login(ctx: TestContext, phone = uniquePhone()) {
 }
 
 export const bearer = (token: string) => ({ Authorization: `Bearer ${token}` });
+
+/** Donne des rôles internes à un utilisateur connecté (préparation des tests du back-office). */
+export async function loginWithRoles(ctx: TestContext, roles: import('@prisma/client').Role[]) {
+  const s = await login(ctx);
+  await ctx.prisma.user.update({ where: { id: s.user.id }, data: { roles: ['FAN', ...roles] } });
+  return s;
+}
+
+/** Crée un profil artiste pour un utilisateur connecté. */
+export async function createArtist(ctx: TestContext, token: string, body: Record<string, unknown>) {
+  const res = await ctx.http().post('/v1/artists').set(bearer(token)).send(body).expect(201);
+  return res.body as { slug: string; id: string };
+}

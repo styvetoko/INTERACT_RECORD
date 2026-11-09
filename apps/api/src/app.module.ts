@@ -9,6 +9,7 @@ import { DisciplinesModule } from './disciplines/disciplines.module';
 import { HealthController } from './health/health.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { SmsModule } from './sms/sms.module';
+import { StorageModule } from './storage/storage.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -20,6 +21,7 @@ import { UsersModule } from './users/users.module';
     PrismaModule,
     AuditModule,
     SmsModule,
+    StorageModule,
     AuthModule,
     UsersModule,
     DisciplinesModule,

@@ -10,6 +10,10 @@ const schema = z.object({
   SMS_PROVIDER: z.enum(['fake']).default('fake'),
   PAYMENT_PROVIDER: z.enum(['fake']).default('fake'),
   DEFAULT_COUNTRY: z.string().length(2).default('CM'),
+  STORAGE_PROVIDER: z.enum(['fake']).default('fake'),
+  STORAGE_DIR: z.string().min(1).default('.storage'),
+  PUBLIC_MEDIA_URL: z.string().url().default('http://localhost:4000/media'),
+  PUBLIC_WEB_URL: z.string().url().default('http://localhost:3000'),
 });
 
 export type Env = z.infer<typeof schema>;

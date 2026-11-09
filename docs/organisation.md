@@ -39,6 +39,19 @@ de l'entreprise relisent et valident le code avant toute mise en production.
 | Ingénieur sécurité et conformité | `securite` | Protéger utilisateurs, argent et données | Revues de sécurité, modèles de menace, listes de contrôle |
 | Ingénieur infrastructure | `devops-sre` | Livrer vite et sans panne | CI/CD, environnements, surveillance, coûts |
 
+### Partenaires de recherche (ChatGPT, Grok)
+
+| Rôle | Tenu par | Apporte |
+| --- | --- | --- |
+| Recherche et organisation | ChatGPT, Grok | Études de marché, comparaisons, idées, organisation du travail |
+| Développement complet | Claude (l'équipe ci-dessus) | Architecture, code, design, tests, livraison |
+
+Leurs apports arrivent par le CEO. Avant d'entrer dans le cahier des charges ou le code,
+chacun est analysé par le chef de produit et l'architecte : retenu (avec la raison),
+écarté (avec la raison) ou soumis à la décision du CEO. Les chiffres, lois et tarifs cités
+sont vérifiés à la source avant d'être utilisés. Il n'existe qu'une version de référence
+du cahier des charges.
+
 ## Qui décide de quoi (matrice RACI)
 
 R = réalise, A = approuve (une seule personne), C = consulté, I = informé.
