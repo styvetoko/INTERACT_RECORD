@@ -1,9 +1,9 @@
 ---
 name: design-system
-description: Système de design premium d'INTERACT Stage (identité, jetons de couleur, typographie, espacements, composants, animations, voix et ton, accessibilité, états d'écran). À lire avant de concevoir ou coder tout ce que l'utilisateur voit, sur web comme sur mobile.
+description: Système de design premium d'INTERACT RECORD (identité, jetons de couleur, typographie, espacements, composants, animations, voix et ton, accessibilité, états d'écran). À lire avant de concevoir ou coder tout ce que l'utilisateur voit, sur web comme sur mobile.
 ---
 
-# Système de design INTERACT Stage
+# Système de design INTERACT RECORD
 
 Le premium vient de la retenue : l'œuvre occupe l'écran, l'interface s'efface, chaque
 mouvement a une raison. Pas d'effets gratuits, pas de dégradés partout, pas d'ombres lourdes.

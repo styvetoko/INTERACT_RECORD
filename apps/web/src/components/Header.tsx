@@ -10,7 +10,7 @@ export function Header({ dict, locale, currentPath }: { dict: Dictionary; locale
       <div className={`container ${styles.inner}`}>
         <Link href="/" className={styles.logo} aria-label={dict.site.name}>
           <span className={styles.logoMark}>INTERACT</span>
-          <span className={styles.logoStage}>Stage</span>
+          <span className={styles.logoRecord}>RECORD</span>
         </Link>
         <a
           className={styles.lang}

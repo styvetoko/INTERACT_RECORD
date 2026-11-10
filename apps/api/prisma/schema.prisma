@@ -1,4 +1,4 @@
-// INTERACT Stage — schéma de données
+// INTERACT RECORD — schéma de données
 // Conventions : identifiants UUID, montants en entiers (FCFA), dates en UTC.
 
 generator client {

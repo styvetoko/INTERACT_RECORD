@@ -1,11 +1,11 @@
 # Avant la mise en production
 
-Liste unique de ce qui doit être fait ou décidé avant d'ouvrir INTERACT Stage au public.
+Liste unique de ce qui doit être fait ou décidé avant d'ouvrir INTERACT RECORD au public.
 Chaque ligne vient d'une revue, d'une recette ou d'un ADR. On coche, on ne supprime pas.
 
 ## Décisions de la direction (CEO) et du juriste
 
-- [ ] **Nom de la plateforme** : « INTERACT Stage » (actuel) ou « INTERACT RECORD » (nom du dépôt) ?
+- [x] **Nom de la plateforme** : **INTERACT RECORD** (décision du CEO, 10 novembre 2026).
 - [ ] **Identité visuelle v0.1** (ADR-0007) : couleurs, polices, logo à valider ou confier à une direction artistique.
 - [ ] **Profils publics de mineurs** (revue sécurité F5) : un artiste de 13 à 17 ans peut-il avoir une vitrine
       publique avec sa ville et une fiche booking ? Avec quel accord parental ?

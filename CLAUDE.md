@@ -1,4 +1,4 @@
-# INTERACT Stage — charte de travail
+# INTERACT RECORD — charte de travail
 
 Ce fichier est lu au début de chaque session. Il fixe ce qui ne se négocie pas.
 Le détail de chaque métier est dans `.claude/skills/` (savoir-faire) et `.claude/agents/` (rôles).

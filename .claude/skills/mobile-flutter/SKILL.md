@@ -1,6 +1,6 @@
 ---
 name: mobile-flutter
-description: Conventions des applications Android et iOS d'INTERACT Stage en Flutter (architecture, état, navigation, lecteur audio et vidéo, hors-ligne, mode économie de data, paiements, performance sur Android d'entrée de gamme, publication sur les stores). À lire avant de créer ou modifier du code dans apps/mobile.
+description: Conventions des applications Android et iOS d'INTERACT RECORD en Flutter (architecture, état, navigation, lecteur audio et vidéo, hors-ligne, mode économie de data, paiements, performance sur Android d'entrée de gamme, publication sur les stores). À lire avant de créer ou modifier du code dans apps/mobile.
 ---
 
 # Mobile (Flutter)
@@ -8,7 +8,7 @@ description: Conventions des applications Android et iOS d'INTERACT Stage en Flu
 ## Architecture
 
 - Découpage par fonctionnalité : `lib/features/<fonctionnalité>/{data,domain,presentation}`.
-- État : Riverpod. Navigation : go_router, avec liens profonds (`interactstage.com/...` ouvre l'application).
+- État : Riverpod. Navigation : go_router, avec liens profonds (`interactrecord.com/...` ouvre l'application).
 - Accès réseau par un client unique (Dio) : jetons, rafraîchissement, clé d'idempotence,
   reprise après coupure, traduction des codes d'erreur de l'API.
 - Modèles immuables (freezed) et sérialisation générée.

@@ -1,8 +1,13 @@
 # Journal des changements
 
-Toutes les évolutions visibles d'INTERACT Stage, écrites pour un lecteur non technique.
+Toutes les évolutions visibles d'INTERACT RECORD, écrites pour un lecteur non technique.
 
 ## Non publié
+
+### Modifié
+
+- La plateforme s'appelle désormais **INTERACT RECORD** (décision du CEO) : application, site,
+  messages SMS, documents et domaine prévu (interactrecord.com).
 
 ### Ajouté
 

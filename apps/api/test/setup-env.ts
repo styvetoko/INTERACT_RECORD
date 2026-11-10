@@ -8,5 +8,5 @@ process.env.PAYMENT_PROVIDER = 'fake';
 process.env.DEFAULT_COUNTRY = 'CM';
 process.env.STORAGE_PROVIDER = 'fake';
 process.env.PUBLIC_MEDIA_URL = 'http://localhost:4000/media';
-process.env.PUBLIC_WEB_URL = 'https://interactstage.test';
+process.env.PUBLIC_WEB_URL = 'https://interactrecord.test';
 if (!process.env.STORAGE_DIR) throw new Error('STORAGE_DIR manquant : lance les tests avec jest');

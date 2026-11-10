@@ -1,6 +1,6 @@
 ---
 name: tests-qualite
-description: Stratégie de tests et définition de « terminé » pour INTERACT Stage (tests unitaires, de bout en bout, critères d'acceptation, base de test temporaire, appareils et réseaux de référence, recette). À lire avant d'écrire ou de relire des tests, et avant de déclarer une fonctionnalité terminée.
+description: Stratégie de tests et définition de « terminé » pour INTERACT RECORD (tests unitaires, de bout en bout, critères d'acceptation, base de test temporaire, appareils et réseaux de référence, recette). À lire avant d'écrire ou de relire des tests, et avant de déclarer une fonctionnalité terminée.
 ---
 
 # Tests et qualité

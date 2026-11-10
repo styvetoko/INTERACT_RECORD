@@ -176,7 +176,7 @@ describe('Vitrine des artistes (PRO-01, PRO-04, PRO-06, parcours 7.2)', () => {
       const text = JSON.stringify(pub.body);
       expect(text).not.toContain(owner.phone);
       expect(text).not.toContain(owner.user.id);
-      expect(pub.body.shareUrl).toBe(`https://interactstage.test/${slug}`);
+      expect(pub.body.shareUrl).toBe(`https://interactrecord.test/${slug}`);
     });
   });
 

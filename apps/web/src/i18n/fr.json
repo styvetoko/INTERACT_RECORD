@@ -1,6 +1,6 @@
 {
   "site": {
-    "name": "INTERACT Stage",
+    "name": "INTERACT RECORD",
     "description": "La scène des artistes africains : découvre, soutiens et réserve les talents du Cameroun.",
     "skipToContent": "Aller au contenu"
   },
@@ -36,7 +36,7 @@
     "about": "À propos",
     "noBio": "Cet artiste n’a pas encore écrit sa biographie.",
     "links": "Sur les réseaux",
-    "since": "Sur INTERACT Stage depuis {date}",
+    "since": "Sur INTERACT RECORD depuis {date}",
     "booking": {
       "title": "Réserver",
       "from": "À partir de",
@@ -69,6 +69,6 @@
     "retry": "Réessayer"
   },
   "footer": {
-    "rights": "© {year} INTERACT Stage. Fait avec fierté au Cameroun."
+    "rights": "© {year} INTERACT RECORD. Fait avec fierté au Cameroun."
   }
 }

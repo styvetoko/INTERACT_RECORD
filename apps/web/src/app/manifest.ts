@@ -3,7 +3,7 @@ import { tokens } from '@interact/design-tokens/tokens.ts';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'INTERACT Stage',
+    name: 'INTERACT RECORD',
     short_name: 'INTERACT',
     description: 'La scène des artistes africains',
     start_url: '/',

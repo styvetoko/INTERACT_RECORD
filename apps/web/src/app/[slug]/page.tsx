@@ -134,7 +134,7 @@ export default async function ArtistPage({ params }: Params) {
               <ShareCard
                 url={artist.shareUrl}
                 qrUrl={api.qrUrl(artist.slug)}
-                fileName={`interact-stage-${artist.slug}.svg`}
+                fileName={`interact-record-${artist.slug}.svg`}
                 labels={{ ...dict.artist.share, qrAlt: t(dict.artist.share.qrAlt, { name: artist.stageName }) }}
               />
             </aside>

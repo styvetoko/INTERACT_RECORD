@@ -1,6 +1,6 @@
 {
   "site": {
-    "name": "INTERACT Stage",
+    "name": "INTERACT RECORD",
     "description": "The stage for African artists: discover, support and book Cameroon’s finest talent.",
     "skipToContent": "Skip to content"
   },
@@ -36,7 +36,7 @@
     "about": "About",
     "noBio": "This artist hasn’t written a bio yet.",
     "links": "On social media",
-    "since": "On INTERACT Stage since {date}",
+    "since": "On INTERACT RECORD since {date}",
     "booking": {
       "title": "Book",
       "from": "From",
@@ -69,6 +69,6 @@
     "retry": "Try again"
   },
   "footer": {
-    "rights": "© {year} INTERACT Stage. Proudly made in Cameroon."
+    "rights": "© {year} INTERACT RECORD. Proudly made in Cameroon."
   }
 }

@@ -1,4 +1,4 @@
-# INTERACT Stage
+# INTERACT RECORD
 
 Plateforme de carrière, de diffusion et de monétisation pour les artistes africains, en commençant par le Cameroun.
 Disciplines de lancement : musique, humour, danse, peinture. Toutes les autres disciplines des industries culturelles

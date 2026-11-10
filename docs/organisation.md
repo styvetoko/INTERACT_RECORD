@@ -1,4 +1,4 @@
-# Organisation de l'équipe INTERACT Stage
+# Organisation de l'équipe INTERACT RECORD
 
 Ce document décrit qui fait quoi, qui décide, et comment le travail circule.
 Il concerne à la fois l'équipe humaine et les rôles tenus par Claude.

@@ -1,9 +1,9 @@
 ---
 name: architecture
-description: Règles d'architecture d'INTERACT Stage (monolithe modulaire NestJS, découpage en modules métier, dépendances, fournisseurs externes, données, évolutivité). À lire avant de créer un module, d'ajouter une dépendance, de toucher au schéma de base de données ou de prendre une décision technique durable.
+description: Règles d'architecture d'INTERACT RECORD (monolithe modulaire NestJS, découpage en modules métier, dépendances, fournisseurs externes, données, évolutivité). À lire avant de créer un module, d'ajouter une dépendance, de toucher au schéma de base de données ou de prendre une décision technique durable.
 ---
 
-# Architecture INTERACT Stage
+# Architecture INTERACT RECORD
 
 ## Forme générale
 

@@ -1,13 +1,13 @@
 ---
 name: web-nextjs
-description: Conventions du web public, de la PWA et du back-office d'INTERACT Stage en Next.js (structure, rendu serveur, référencement des pages d'artistes, partage social, PWA hors-ligne, performance, traduction). À lire avant de créer ou modifier du code dans apps/web.
+description: Conventions du web public, de la PWA et du back-office d'INTERACT RECORD en Next.js (structure, rendu serveur, référencement des pages d'artistes, partage social, PWA hors-ligne, performance, traduction). À lire avant de créer ou modifier du code dans apps/web.
 ---
 
 # Web (Next.js)
 
 ## Rôle du web
 
-1. **Pages publiques** d'artistes et d'œuvres (`interactstage.com/nom-artiste`) : rapides,
+1. **Pages publiques** d'artistes et d'œuvres (`interactrecord.com/nom-artiste`) : rapides,
    bien référencées, avec aperçu riche quand on partage le lien sur WhatsApp ou Facebook.
 2. **PWA** installable pour ceux qui n'installent pas l'application (téléphones pleins).
 3. **Espace artiste** sur ordinateur (publication de fichiers lourds, statistiques).

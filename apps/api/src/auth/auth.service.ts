@@ -69,7 +69,7 @@ export class AuthService {
 
     await this.sms.send(
       phone,
-      `INTERACT Stage : ton code est ${code}. Il expire dans 5 minutes. Ne le partage avec personne.`,
+      `INTERACT RECORD : ton code est ${code}. Il expire dans 5 minutes. Ne le partage avec personne.`,
     );
     return { phone, expiresInSeconds: OTP_TTL_SECONDS };
   }

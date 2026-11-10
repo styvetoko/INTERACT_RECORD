@@ -11,7 +11,7 @@ import { UserThrottlerGuard } from './user-throttler.guard';
   imports: [
     JwtModule.registerAsync({
       global: true,
-      useFactory: () => ({ secret: env().JWT_ACCESS_SECRET, signOptions: { issuer: 'interact-stage' }, verifyOptions: { issuer: 'interact-stage' } }),
+      useFactory: () => ({ secret: env().JWT_ACCESS_SECRET, signOptions: { issuer: 'interact-record' }, verifyOptions: { issuer: 'interact-record' } }),
     }),
   ],
   controllers: [AuthController],

@@ -1,6 +1,6 @@
 ---
 name: conventions-api
-description: Conventions de l'API REST d'INTERACT Stage (routes, validation, codes d'erreur, pagination, idempotence, versions, réponses). À lire avant d'ajouter ou de modifier une route, un contrôleur ou un format de réponse.
+description: Conventions de l'API REST d'INTERACT RECORD (routes, validation, codes d'erreur, pagination, idempotence, versions, réponses). À lire avant d'ajouter ou de modifier une route, un contrôleur ou un format de réponse.
 ---
 
 # Conventions de l'API

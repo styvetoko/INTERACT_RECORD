@@ -1,7 +1,7 @@
 {
-  "name": "interact-stage",
+  "name": "interact-record",
   "private": true,
-  "description": "INTERACT Stage : plateforme de carrière, de diffusion et de monétisation pour les artistes africains",
+  "description": "INTERACT RECORD : plateforme de carrière, de diffusion et de monétisation pour les artistes africains",
   "packageManager": "pnpm@10.28.0",
   "engines": { "node": ">=22" },
   "scripts": {

@@ -13,7 +13,7 @@ import { pinWeakness } from './pin';
 
 export const PIN_MAX_FAILURES = 5;
 
-/** Rôles de l'équipe INTERACT Stage, attribués depuis le back-office. FAN et ARTIST ne s'attribuent pas à la main. */
+/** Rôles de l'équipe INTERACT RECORD, attribués depuis le back-office. FAN et ARTIST ne s'attribuent pas à la main. */
 export const INTERNAL_ROLES = ['ADMIN', 'MODERATOR', 'FINANCE', 'SUPPORT', 'EDITOR'] as const satisfies readonly Role[];
 export type InternalRole = (typeof INTERNAL_ROLES)[number];
 const isInternal = (r: Role): r is InternalRole => (INTERNAL_ROLES as readonly Role[]).includes(r);

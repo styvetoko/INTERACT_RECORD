@@ -1,6 +1,6 @@
 ---
 name: securite-conformite
-description: Règles de sécurité et de conformité d'INTERACT Stage (authentification, autorisations, secrets, données personnelles, KYC, mineurs, modération, journaux, OWASP, loi camerounaise de 2024 sur les données, RGPD pour la diaspora). À lire avant tout code touchant l'identité, les droits, les données personnelles, l'argent ou les contenus des utilisateurs.
+description: Règles de sécurité et de conformité d'INTERACT RECORD (authentification, autorisations, secrets, données personnelles, KYC, mineurs, modération, journaux, OWASP, loi camerounaise de 2024 sur les données, RGPD pour la diaspora). À lire avant tout code touchant l'identité, les droits, les données personnelles, l'argent ou les contenus des utilisateurs.
 ---
 
 # Sécurité et conformité

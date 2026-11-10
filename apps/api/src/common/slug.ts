@@ -1,7 +1,7 @@
 const RESERVED = new Set([
   'admin', 'api', 'app', 'me', 'settings', 'login', 'logout', 'signup', 'help', 'support',
   'search', 'explore', 'discover', 'artists', 'events', 'shop', 'booking', 'wallet', 'interact',
-  'interactstage', 'about', 'legal', 'terms', 'privacy', 'v1', 'static', 'assets', 'media',
+  'interactrecord', 'interact-record', 'record', 'about', 'legal', 'terms', 'privacy', 'v1', 'static', 'assets', 'media',
   'reference', 'manage', 'fr', 'en', 'artiste', 'artistes', 'connexion', 'compte', 'lang',
   'manifest', 'robots', 'sitemap', 'favicon', 'opengraph-image', '_next',
 ]);

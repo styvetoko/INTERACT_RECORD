@@ -2,7 +2,7 @@
   "name": "@interact/design-tokens",
   "version": "0.1.0",
   "private": true,
-  "description": "Jetons de design INTERACT Stage : source unique des couleurs, typographies, espacements et animations",
+  "description": "Jetons de design INTERACT RECORD : source unique des couleurs, typographies, espacements et animations",
   "main": "tokens.json",
   "exports": {
     "./tokens.json": "./tokens.json",

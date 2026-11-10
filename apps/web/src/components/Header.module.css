@@ -33,8 +33,9 @@
   color: transparent;
 }
 
-.logoStage {
+.logoRecord {
   font-weight: var(--font-weight-regular);
+  letter-spacing: 0.08em;
   color: var(--color-text-secondary);
 }
 

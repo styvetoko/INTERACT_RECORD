@@ -1,6 +1,6 @@
 ---
 name: git-livraison
-description: Flux de livraison d'INTERACT Stage (journée de sprint, branches, commits conventionnels, demandes de fusion, ADR, journal des changements, démonstration de fin de journée). À lire au début et à la fin de chaque tâche, et avant tout commit ou push.
+description: Flux de livraison d'INTERACT RECORD (journée de sprint, branches, commits conventionnels, demandes de fusion, ADR, journal des changements, démonstration de fin de journée). À lire au début et à la fin de chaque tâche, et avant tout commit ou push.
 ---
 
 # Livraison

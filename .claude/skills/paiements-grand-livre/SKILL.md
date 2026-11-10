@@ -1,6 +1,6 @@
 ---
 name: paiements-grand-livre
-description: Règles absolues pour l'argent dans INTERACT Stage (grand livre en partie double, portefeuilles, commissions, séquestre, retraits, fournisseurs Mobile Money, idempotence, rapprochement, fraude). À lire avant tout code qui touche un montant, un solde, un paiement, un remboursement ou un retrait.
+description: Règles absolues pour l'argent dans INTERACT RECORD (grand livre en partie double, portefeuilles, commissions, séquestre, retraits, fournisseurs Mobile Money, idempotence, rapprochement, fraude). À lire avant tout code qui touche un montant, un solde, un paiement, un remboursement ou un retrait.
 ---
 
 # Paiements et grand livre

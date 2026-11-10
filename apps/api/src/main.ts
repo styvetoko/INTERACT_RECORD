@@ -18,7 +18,7 @@ async function bootstrap(): Promise<void> {
   app.disable('x-powered-by');
   configureApp(app);
   await app.listen(config.PORT);
-  new Logger('Bootstrap').log(`API INTERACT Stage démarrée sur le port ${config.PORT}`);
+  new Logger('Bootstrap').log(`API INTERACT RECORD démarrée sur le port ${config.PORT}`);
 }
 
 void bootstrap();
