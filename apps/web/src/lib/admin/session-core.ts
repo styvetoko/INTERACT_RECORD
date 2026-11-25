@@ -15,6 +15,14 @@ export const REFRESH_MARGIN_MS = 60_000;
 
 export const DEVICE_NAME = 'Back-office web';
 
+/**
+ * Adresse absolue pour une redirection. Derrière le proxy de démonstration (Codespaces), le serveur
+ * ne voit que « localhost » : on utilise alors le domaine public déclaré (DEMO_PUBLIC_HOST).
+ */
+export function absoluteUrl(path: string, requestUrl: string, demoHost = process.env.DEMO_PUBLIC_HOST): URL {
+  return new URL(path, demoHost && demoHost !== 'localhost:3000' ? `https://${demoHost}` : requestUrl);
+}
+
 export interface CookieOptions {
   httpOnly: true;
   sameSite: 'strict';

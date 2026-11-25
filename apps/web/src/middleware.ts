@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import {
-  ACCESS_COOKIE, classifyRefresh, cookieOptions, createRefreshDeduper, DEVICE_NAME, LOGIN_PATH, needsRefresh,
+  absoluteUrl, ACCESS_COOKIE, classifyRefresh, cookieOptions, createRefreshDeduper, DEVICE_NAME, LOGIN_PATH, needsRefresh,
   REFRESH_COOKIE, REFRESH_COOKIE_MAX_AGE_SECONDS, type RefreshResult, type TokenPair,
 } from '@/lib/admin/session-core';
 
@@ -32,8 +32,8 @@ function harden(res: NextResponse): NextResponse {
 function toLogin(request: NextRequest): NextResponse {
   // Seul le chemin est gardé : une recherche par numéro ne doit pas se recopier dans l'adresse (revue F3).
   // Adresse relative : juste derrière n'importe quel proxy.
-  const location = `${LOGIN_PATH}?${new URLSearchParams({ suite: request.nextUrl.pathname })}`;
-  const res = new NextResponse(null, { status: 303, headers: { Location: location } });
+  const location = absoluteUrl(`${LOGIN_PATH}?${new URLSearchParams({ suite: request.nextUrl.pathname })}`, request.url);
+  const res = NextResponse.redirect(location, 303);
   res.cookies.set(ACCESS_COOKIE, '', cookieOptions(0));
   res.cookies.set(REFRESH_COOKIE, '', cookieOptions(0));
   return harden(res);

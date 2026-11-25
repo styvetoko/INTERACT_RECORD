@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  ADMIN_PATH, classifyRefresh, cookieOptions, createRefreshDeduper, jwtExpiresAt, needsRefresh, safeAdminPath,
+  absoluteUrl, ADMIN_PATH, classifyRefresh, cookieOptions, createRefreshDeduper, jwtExpiresAt, needsRefresh, safeAdminPath,
   type RefreshResult, type TokenPair,
 } from './session-core';
 
@@ -34,6 +34,15 @@ describe('session du back-office (ADR-0009)', () => {
     expect(safeAdminPath('/junior-bonaberi')).toBe(ADMIN_PATH);
     expect(safeAdminPath('/admin/connexion?suite=/admin')).toBe(ADMIN_PATH);
     expect(safeAdminPath(null)).toBe(ADMIN_PATH);
+  });
+
+  it('redirige vers le domaine public de démonstration, sinon vers l’adresse de la requête', () => {
+    expect(absoluteUrl('/admin/connexion', 'http://localhost:3000/admin', 'cs-3000.app.github.dev').href)
+      .toBe('https://cs-3000.app.github.dev/admin/connexion');
+    expect(absoluteUrl('/admin/connexion', 'https://interactrecord.com/admin', undefined).href)
+      .toBe('https://interactrecord.com/admin/connexion');
+    // Un chemin déjà filtré ne peut pas changer de domaine.
+    expect(absoluteUrl('/fr', 'https://interactrecord.com/lang', '').origin).toBe('https://interactrecord.com');
   });
 
   it('pose des cookies httpOnly, SameSite strict, limités à /admin', () => {

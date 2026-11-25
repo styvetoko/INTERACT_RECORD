@@ -22,13 +22,19 @@ jobs:
           x() { docker compose -f .devcontainer/docker-compose.yml exec -T -u root -w /workspaces/INTERACT_RECORD app bash -c "$1"; }
           x "bash .devcontainer/demarrer.sh"
           sleep 5
-          x "curl -sf -o /dev/null -w 'accueil %{http_code}\n' http://localhost:3000/"
-          x "curl -sf -o /dev/null -w 'connexion %{http_code}\n' http://localhost:3000/admin/connexion"
-          x "curl -s -o /dev/null -w 'admin sans session %{http_code} vers %header{location}\n' http://localhost:3000/admin/comptes"
-          x "curl -sf http://localhost:3000/ | grep -q 'Ngono Bikutsi' && echo 'artistes de démonstration visibles'"
-          x "curl -sf -o /dev/null -w 'QR code via le site %{http_code}\n' http://localhost:3000/v1/artists/ngono-bikutsi/qr.svg"
-          x "curl -sf http://localhost:3000/ngono-bikutsi | grep -o 'src=\"[^\"]*/media/[^\"]*' | head -1 | sed 's/src=\"//' | xargs -I{} curl -sf -o /dev/null -w 'image via le site %{http_code}\n' {}"
-          x "curl -s -X POST http://localhost:4000/v1/auth/otp/request -H 'content-type: application/json' -d '{\"phone\":\"699000099\"}' >/dev/null; bash .devcontainer/code-sms.sh"
-      - name: Journaux en cas d'échec
-        if: failure()
+          check() { local got; got=$(x "$2"); echo "$1 : $got"; [ "$got" = "$3" ] || { echo "ÉCHEC, attendu : $3"; exit 1; }; }
+          check "accueil" "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/" 200
+          check "connexion" "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/admin/connexion" 200
+          check "admin sans session" "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/admin/comptes" 303
+          x "curl -s -o /dev/null -w 'redirigé vers %{redirect_url}\n' http://localhost:3000/admin/comptes"
+          check "changement de langue" "curl -s -o /dev/null -w '%{http_code}' 'http://localhost:3000/lang?to=en&back=/admin/connexion'" 303
+          check "artistes visibles" "curl -s http://localhost:3000/ | grep -c 'Ngono Bikutsi' | sed 's/[1-9][0-9]*/oui/'" oui
+          check "QR code via le site" "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/v1/artists/ngono-bikutsi/qr.svg" 200
+          x "curl -s -X POST http://localhost:4000/v1/auth/otp/request -H 'content-type: application/json' -d '{\"phone\":\"699000099\"}'; echo"
+          sleep 1
+          x "grep -c 'SMS vers' /tmp/interact/api.log; tail -n 5 /tmp/interact/api.log"
+          x "bash .devcontainer/code-sms.sh" | tee /tmp/code.txt
+          grep -q "Dernier code SMS : [0-9]\{6\}" /tmp/code.txt
+      - name: Journaux
+        if: always()
         run: docker compose -f .devcontainer/docker-compose.yml exec -T -u root app bash -c "tail -n 60 /tmp/interact/*.log" || true
