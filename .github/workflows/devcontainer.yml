@@ -1,6 +1,7 @@
 name: Environnement de démonstration
 
-# Vérifie que le Codespace de démonstration se prépare et démarre (base, API, site).
+# Vérifie que le Codespace de démonstration se prépare et démarre (base, API, site),
+# avec le même docker-compose et les mêmes scripts que Codespaces.
 on:
   push:
     branches: ['**']
@@ -12,16 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: devcontainers/ci@v0.3
-        env:
-          # Docker Compose récent construit par « bake », que l'outil devcontainers ne sait pas encore autoriser.
-          COMPOSE_BAKE: 'false'
-        with:
-          push: never
-          runCmd: |
-            bash .devcontainer/demarrer.sh
-            curl -sf -o /dev/null -w "accueil %{http_code}\n" http://localhost:3000/
-            curl -sf -o /dev/null -w "connexion %{http_code}\n" http://localhost:3000/admin/connexion
-            curl -s -o /dev/null -w "admin sans session %{http_code} -> %{redirect_url}\n" http://localhost:3000/admin/comptes
-            curl -sf http://localhost:3000/ | grep -q "Ngono Bikutsi" && echo "artistes de démonstration visibles"
-            curl -sf -o /dev/null -w "image via le site %{http_code}\n" "http://localhost:3000$(curl -sf http://localhost:4000/v1/artists/ngono-bikutsi | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>console.log(new URL(JSON.parse(d).avatar.variants[0].url).pathname))')"
+      - name: Conteneurs
+        run: docker compose -f .devcontainer/docker-compose.yml up -d
+      - name: Préparation (comme postCreateCommand)
+        run: docker compose -f .devcontainer/docker-compose.yml exec -T -u root -w /workspaces/INTERACT_RECORD app bash .devcontainer/preparer.sh
+      - name: Démarrage (comme postStartCommand) et vérifications
+        run: |
+          x() { docker compose -f .devcontainer/docker-compose.yml exec -T -u root -w /workspaces/INTERACT_RECORD app bash -c "$1"; }
+          x "bash .devcontainer/demarrer.sh"
+          sleep 5
+          x "curl -sf -o /dev/null -w 'accueil %{http_code}\n' http://localhost:3000/"
+          x "curl -sf -o /dev/null -w 'connexion %{http_code}\n' http://localhost:3000/admin/connexion"
+          x "curl -s -o /dev/null -w 'admin sans session %{http_code} vers %header{location}\n' http://localhost:3000/admin/comptes"
+          x "curl -sf http://localhost:3000/ | grep -q 'Ngono Bikutsi' && echo 'artistes de démonstration visibles'"
+          x "curl -sf -o /dev/null -w 'QR code via le site %{http_code}\n' http://localhost:3000/v1/artists/ngono-bikutsi/qr.svg"
+          x "curl -sf http://localhost:3000/ngono-bikutsi | grep -o 'src=\"[^\"]*/media/[^\"]*' | head -1 | sed 's/src=\"//' | xargs -I{} curl -sf -o /dev/null -w 'image via le site %{http_code}\n' {}"
+          x "curl -s -X POST http://localhost:4000/v1/auth/otp/request -H 'content-type: application/json' -d '{\"phone\":\"699000099\"}' >/dev/null; bash .devcontainer/code-sms.sh"
+      - name: Journaux en cas d'échec
+        if: failure()
+        run: docker compose -f .devcontainer/docker-compose.yml exec -T -u root app bash -c "tail -n 60 /tmp/interact/*.log" || true
