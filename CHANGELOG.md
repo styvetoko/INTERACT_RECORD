@@ -33,6 +33,8 @@ Toutes les évolutions visibles d'INTERACT RECORD, écrites pour un lecteur non 
 - Back-office : les jetons de connexion restent sur le serveur web (cookies inaccessibles au
   navigateur), la session se ferme après 8 heures sans activité, et un compte hors de l'équipe est
   refusé même avec le bon code SMS (ADR-0009).
+- Faille publiée le mois dernier dans une bibliothèque utilisée par l'outil de base de données (effect,
+  déni de service) : version corrigée imposée.
 - Mise à jour des bibliothèques vulnérables (traitement d'images, réception de fichiers, validation),
   contrôle automatique des failles dans l'intégration continue (ADR-0008).
 
