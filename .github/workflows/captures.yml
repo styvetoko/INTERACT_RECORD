@@ -1,0 +1,80 @@
+name: Captures de recette
+
+# Lancé à la demande : un commit dont le message contient [captures], ou manuellement.
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+jobs:
+  captures:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[captures]')
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: interact
+          POSTGRES_PASSWORD: interact
+          POSTGRES_DB: interact_captures
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U interact"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      # Secrets factices : environnement jetable de recette, jamais exposé.
+      DATABASE_URL: postgresql://interact:interact@localhost:5432/interact_captures
+      JWT_ACCESS_SECRET: captures-secret-factice-de-32-caracteres-min
+      STORAGE_DIR: /tmp/interact-storage
+      PUBLIC_MEDIA_URL: http://localhost:4000/media
+      PUBLIC_WEB_URL: http://localhost:3000
+      API_URL: http://localhost:4000
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Base de données et jeu de démonstration
+        working-directory: apps/api
+        env:
+          NODE_ENV: development
+        run: |
+          pnpm prisma:generate
+          pnpm prisma:deploy
+          pnpm prisma:seed
+          pnpm seed:demo
+          # Le compte d'équipe de démonstration reçoit aussi le rôle administrateur, pour tout montrer.
+          psql "$DATABASE_URL" -c "UPDATE \"User\" SET roles = ARRAY['FAN','MODERATOR','ADMIN']::\"Role\"[], \"displayName\" = 'Admin (démo)' WHERE phone = '+237699000099';"
+      - name: "API (faux fournisseur SMS : le code est écrit dans le journal)"
+        working-directory: apps/api
+        env:
+          NODE_ENV: development
+        run: |
+          pnpm build
+          nohup node dist/main.js > "$GITHUB_WORKSPACE/api.log" 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:4000/health && break; sleep 1; done
+      - name: Site web (production)
+        run: |
+          pnpm --filter @interact/web build
+          NODE_ENV=production nohup pnpm --filter @interact/web start > web.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/admin/connexion && break; sleep 1; done
+      - name: Captures
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm install --no-save playwright@1.63.0
+          npx playwright install --with-deps chromium
+          cp "$GITHUB_WORKSPACE/scripts/captures/back-office.mjs" /tmp/pw/
+          API_LOG="$GITHUB_WORKSPACE/api.log" OUT="$GITHUB_WORKSPACE/captures" node /tmp/pw/back-office.mjs
+      - name: Journaux en cas d'échec
+        if: failure()
+        run: tail -n 80 api.log web.log || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: captures
+          path: captures/
+          retention-days: 14
