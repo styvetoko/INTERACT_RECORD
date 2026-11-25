@@ -52,4 +52,5 @@ for i in $(seq 1 60); do curl -sf http://localhost:4000/health >/dev/null && bre
 # NODE_ENV vient de la configuration de l'API : le site, lui, se construit en production.
 (unset NODE_ENV; set -a; . apps/web/.env.local; set +a; pnpm --filter @interact/web build)
 kill "$(cat /tmp/interact-build-api.pid)" 2>/dev/null || true
+pkill -f "node dist/main.js" 2>/dev/null || true
 echo "Préparation terminée."
