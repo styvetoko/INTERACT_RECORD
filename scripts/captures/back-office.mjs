@@ -106,6 +106,15 @@ for (const locale of ['fr', 'en']) {
       await shot(page, `${p}-08-journal`);
     });
 
+    // Aucune page ne doit défiler horizontalement (règle 9 : petit téléphone).
+    for (const path of ['/admin/comptes', '/admin/artistes', '/admin/journal']) {
+      await step(`${p} pas de débordement ${path}`, page, async () => {
+        await page.goto(`${BASE}${path}`);
+        const width = await page.evaluate(() => document.documentElement.scrollWidth);
+        if (width > viewport.width) throw new Error(`largeur ${width} px pour un écran de ${viewport.width} px`);
+      });
+    }
+
     // Vérifications simples d'accessibilité : aucune cible tactile sous 44 px dans la zone principale.
     const small = await page.$$eval('main a, main button, main input, main select, header a, header button', (els) =>
       els.filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.height < 44; })
