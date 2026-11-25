@@ -25,10 +25,9 @@
 
 .brand {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-2);
   min-height: var(--size-touch-target);
-  align-content: center;
   font-family: var(--font-display);
   font-weight: var(--font-weight-bold);
   font-size: var(--text-md);
@@ -96,6 +95,10 @@
   font-size: var(--text-sm);
 }
 
+.account button {
+  white-space: nowrap;
+}
+
 .who {
   max-width: 22ch;
   overflow: hidden;
@@ -137,6 +140,7 @@
 .backLink {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-2);
   min-height: var(--size-touch-target);
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
@@ -472,7 +476,8 @@
 
 .danger {
   background: var(--color-danger);
-  color: var(--color-text-primary);
+  /* Texte sur le fond de la page : 7:1 en thème sombre (le texte clair n'atteignait que 2,5:1). */
+  color: var(--color-bg);
 }
 
 .danger:hover {
