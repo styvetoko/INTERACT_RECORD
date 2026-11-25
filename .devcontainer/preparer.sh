@@ -32,7 +32,7 @@ DEMO_PUBLIC_HOST=${HOST}
 ENV
 
 corepack enable
-yes | pnpm install --frozen-lockfile
+CI=true pnpm install --frozen-lockfile
 
 set -a; . apps/api/.env; set +a
 for i in $(seq 1 30); do pnpm --filter @interact/api exec prisma db execute --url "$DATABASE_URL" --stdin <<< "SELECT 1" >/dev/null 2>&1 && break; sleep 2; done
