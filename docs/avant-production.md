@@ -21,6 +21,12 @@ Chaque ligne vient d'une revue, d'une recette ou d'un ADR. On coche, on ne suppr
 - [ ] Mettre dans des transactions le journal d'audit des envois d'images et de la fiche booking (revue M4, faible).
 - [ ] Ajouter un test de refus d'une photo HEIC d'iPhone (non générable dans l'environnement actuel).
 - [ ] CORS limité aux domaines officiels (aujourd'hui ouvert, hérité du J1).
+- [ ] Back-office avec plusieurs instances du serveur web : le renouvellement de session est dédoublonné
+      en mémoire d'une seule instance (ADR-0009). Session collante, ou délai de grâce dans l'API.
+- [ ] Back-office : les demandes de code SMS partent toutes de l'IP du serveur web (limite de l'API partagée
+      par l'équipe, ADR-0009).
+- [ ] Politique de sécurité du contenu (CSP) pour le site et le back-office.
+- [ ] Back-office : tests de parcours Playwright (connexion, suspension, rôles, badge) contre une API de test.
 - [ ] Vrais fournisseurs SMS et paiement (aujourd'hui faux fournisseurs, interdits en production).
 - [ ] Test d'intrusion par un cabinet externe.
 - [ ] Essais sur un vrai Android d'entrée de gamme en 3G réelle, avec TalkBack et VoiceOver.

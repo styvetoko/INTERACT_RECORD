@@ -19,6 +19,9 @@ Toutes les évolutions visibles d'INTERACT RECORD, écrites pour un lecteur non 
 - Fiche booking, jauge de complétude du profil, catégories modifiables, annuaire filtrable.
 - Back-office : recherche des comptes, suspension et réactivation avec motif, rôles de l'équipe,
   badge artiste vérifié, journal d'audit consultable.
+- Écrans du back-office sur le web (`/admin`) : connexion de l'équipe par code SMS, recherche et fiche
+  des comptes, suspension et réactivation, rôles, badge vérifié des artistes, journal d'audit.
+  Chaque membre ne voit que les outils de son rôle. En français et en anglais, utilisable sur téléphone.
 
 ### Sécurité
 
@@ -27,6 +30,9 @@ Toutes les évolutions visibles d'INTERACT RECORD, écrites pour un lecteur non 
 - Contre-vérification de sécurité : rien ne bloque ; 5 points faibles supplémentaires corrigés
   (verrou de suspension figé, limites de débit par utilisateur, journaux sans données personnelles,
   file des images, démarrage impossible sans environnement déclaré). 152 tests.
+- Back-office : les jetons de connexion restent sur le serveur web (cookies inaccessibles au
+  navigateur), la session se ferme après 8 heures sans activité, et un compte hors de l'équipe est
+  refusé même avec le bon code SMS (ADR-0009).
 - Mise à jour des bibliothèques vulnérables (traitement d'images, réception de fichiers, validation),
   contrôle automatique des failles dans l'intégration continue (ADR-0008).
 

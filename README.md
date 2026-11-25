@@ -24,7 +24,7 @@ repris dans le code et les tests.
 | Dossier | Contenu | État |
 | --- | --- | --- |
 | `apps/api` | API NestJS + PostgreSQL (Prisma) | J1 et J2 livrés |
-| `apps/web` | Web public : accueil et vitrines d'artistes (Next.js) | J2 livré ; PWA et écrans du back-office à venir |
+| `apps/web` | Web public (accueil, vitrines d'artistes) et back-office `/admin` (Next.js) | J2 livré ; PWA à venir |
 | `apps/mobile` | Applications Android et iOS (Flutter) | à venir |
 | `packages/design-tokens` | Jetons de design, générés en CSS, TypeScript et Dart | v0.1 proposée |
 
@@ -62,6 +62,11 @@ pnpm --filter @interact/web dev
 
 `seed:demo` crée 8 artistes **fictifs** avec des visuels abstraits générés (développement uniquement).
 Le site répond sur `http://localhost:3000` (copier `apps/web/.env.example` en `apps/web/.env.local`).
+
+Back-office : `http://localhost:3000/admin`. On s'y connecte par code SMS (en développement, le code est
+dans les journaux de l'API) avec un compte qui a un rôle de l'équipe (ADMIN, MODERATOR, SUPPORT…).
+Le jeu de démonstration (`pnpm --filter @interact/api seed:demo`) crée un compte modérateur
+(+237 699 00 00 99). Pour un administrateur, ajouter le rôle `ADMIN` à un compte dans la base de développement. Fonctionnement de la session : ADR-0009.
 
 L'API répond sur `http://localhost:4000`. En développement, les SMS ne sont pas envoyés : le code de connexion
 apparaît dans les journaux du serveur (faux fournisseur SMS).

@@ -56,11 +56,31 @@ organisateurs et marques me prennent au sérieux.
   description, image), en français ou en anglais, thème sombre par défaut, sur les jetons de design.
 - Page d'accueil listant les artistes par discipline.
 
+### Back-office — écrans web (ADM-01, ADM-10, ACC-06), ajout du 25 novembre
+
+En tant que membre de l'équipe, je veux gérer comptes et artistes depuis un navigateur,
+afin de ne plus dépendre d'un développeur pour chaque suspension ou badge.
+
+- Étant donné un compte de l'équipe, quand il saisit son numéro puis le code SMS sur `/admin/connexion`,
+  alors il arrive sur la première section permise par son rôle.
+- Étant donné un compte sans rôle interne, même avec le bon code, alors l'accès est refusé et la session
+  ouverte est refermée aussitôt.
+- Les jetons ne sont jamais lisibles par le navigateur (cookies httpOnly, SameSite strict, limités à `/admin`) ;
+  la session se renouvelle seule et se ferme après 8 heures sans activité (ADR-0009).
+- Le menu et les boutons suivent les droits de l'API : support → comptes ; modération → artistes,
+  fiche d'un compte, suspension ; administrateur → tout, dont les rôles et le journal.
+- Comptes : recherche par numéro ou nom, filtres statut et rôle, numéros masqués dans la liste, fiche
+  complète avec avertissement « consultation tracée », suspension et réactivation avec motif, rôles avec motif.
+- Artistes : recherche par nom de scène, attribution et retrait du badge vérifié avec motif.
+- Journal d'audit : filtres action, objet, auteur ; pagination ; lecture seule.
+- Chaque page a ses états : chargement (squelette), contenu, vide, erreur avec « Réessayer », hors-ligne.
+- Tout en français et en anglais ; tableaux lisibles en cartes sur téléphone ; zones tactiles de 44 px.
+
 ## Hors périmètre du J2
 
 Œuvres, onglets de contenus et œuvre épinglée (J3), abonnés et mur des supporters (J4-J5),
-dossier de presse PDF (phase 2), gestion des membres et managers (J8), interface du back-office
-(l'API est livrée, les écrans suivent).
+dossier de presse PDF (phase 2), gestion des membres et managers (J8), écrans de la finance
+et de l'éditorial (avec leurs modules).
 
 ## Bilan
 
@@ -74,3 +94,8 @@ dossier de presse PDF (phase 2), gestion des membres et managers (J8), interface
   une page inconnue renvoie bien 404, toutes les cibles tactiles mesurent au moins 44 px.
 - Non vérifié : vrai téléphone Android d'entrée de gamme en 3G réelle, lecteurs d'écran
   TalkBack et VoiceOver, photos HEIC d'iPhone (refusées : seul l'AVIF est accepté).
+- Écrans du back-office (25 novembre) : logique de session, droits et messages couverts par des tests
+  Vitest. Non vérifié dans cet environnement (installation des dépendances impossible) : compilation
+  Next.js, rendu réel des écrans, parcours complet contre l'API. La CI le vérifie au push ; les captures
+  et les parcours Playwright restent à faire.
+

@@ -70,5 +70,200 @@
   },
   "footer": {
     "rights": "© {year} INTERACT RECORD. Fait avec fierté au Cameroun."
+  },
+  "admin": {
+    "title": "Back-office",
+    "brand": "Équipe",
+    "nav": {
+      "label": "Navigation du back-office",
+      "users": "Comptes",
+      "artists": "Artistes",
+      "audit": "Journal d’audit"
+    },
+    "signedInAs": "Connecté : {name}",
+    "unnamed": "Sans nom",
+    "logout": "Se déconnecter",
+    "roles": {
+      "ADMIN": "Administrateur",
+      "MODERATOR": "Modération",
+      "FINANCE": "Finance",
+      "SUPPORT": "Support",
+      "EDITOR": "Éditorial",
+      "FAN": "Fan",
+      "ARTIST": "Artiste",
+      "MANAGER": "Manager"
+    },
+    "status": {
+      "ACTIVE": "Actif",
+      "SUSPENDED": "Suspendu",
+      "DELETION_PENDING": "Suppression demandée"
+    },
+    "login": {
+      "title": "Espace de l’équipe",
+      "subtitle": "Connecte-toi avec le numéro de ton compte. Seuls les membres de l’équipe ont accès.",
+      "phoneLabel": "Numéro de téléphone",
+      "phoneHint": "Exemple : 6 77 12 34 56. Le +237 est ajouté pour toi.",
+      "send": "Recevoir un code",
+      "codeLabel": "Code reçu par SMS",
+      "codeHint": "Envoyé au {phone}. Il expire dans 5 minutes.",
+      "verify": "Se connecter",
+      "resend": "Renvoyer le code",
+      "resent": "Nouveau code envoyé.",
+      "change": "Changer de numéro",
+      "pending": "Un instant…"
+    },
+    "home": {
+      "noToolsTitle": "Pas encore d’outil pour ton rôle",
+      "noToolsBody": "Les écrans de la finance et de l’éditorial arrivent avec les prochaines étapes."
+    },
+    "forbidden": {
+      "title": "Accès réservé",
+      "body": "Ton rôle ne permet pas d’ouvrir cette page. Demande à un administrateur si tu en as besoin."
+    },
+    "offline": "Tu es hors ligne. Les pages déjà ouvertes restent lisibles ; les actions reprendront au retour du réseau.",
+    "common": {
+      "search": "Rechercher",
+      "reset": "Effacer",
+      "all": "Tous",
+      "next": "Page suivante",
+      "first": "Revenir au début",
+      "back": "Retour",
+      "reason": "Motif",
+      "reasonHint": "5 à 500 caractères. Il est enregistré dans le journal d’audit.",
+      "saved": "C’est enregistré.",
+      "pending": "Enregistrement…",
+      "loading": "Chargement",
+      "retry": "Réessayer",
+      "errorTitle": "Cette page n’a pas pu se charger",
+      "errorBody": "Vérifie ta connexion puis réessaie. Si ça continue, préviens l’équipe technique."
+    },
+    "users": {
+      "title": "Comptes",
+      "subtitle": "Recherche par numéro exact ou par nom. Les numéros sont masqués dans la liste.",
+      "searchLabel": "Numéro ou nom",
+      "searchPlaceholder": "677 12 34 56 ou Brice",
+      "statusFilter": "Statut",
+      "roleFilter": "Rôle",
+      "columns": {
+        "name": "Nom",
+        "phone": "Numéro",
+        "city": "Ville",
+        "roles": "Rôles",
+        "status": "Statut",
+        "createdAt": "Inscrit le"
+      },
+      "emptyTitle": "Aucun compte trouvé",
+      "emptyBody": "Vérifie le numéro, ou essaie une partie du nom.",
+      "viewNotice": "Ta consultation de cette fiche est enregistrée dans le journal d’audit.",
+      "detail": {
+        "identity": "Identité",
+        "phone": "Numéro",
+        "email": "E-mail",
+        "city": "Ville",
+        "country": "Pays",
+        "language": "Langue",
+        "createdAt": "Inscrit le",
+        "kyc": "Vérification d’identité",
+        "kycLevel": "Niveau {level}",
+        "pin": "Code PIN",
+        "pinSet": "Créé",
+        "pinUnset": "Pas encore créé",
+        "sessions": {
+          "one": "{count} appareil connecté",
+          "other": "{count} appareils connectés"
+        },
+        "deletion": "Suppression demandée le {date}",
+        "suspendedReason": "Motif de la suspension",
+        "artists": "Profils artistes",
+        "noArtists": "Aucun profil artiste.",
+        "memberRole": {
+          "OWNER": "Propriétaire",
+          "MEMBER": "Membre",
+          "MANAGER": "Manager"
+        },
+        "empty": "Non renseigné",
+        "devices": "Appareils",
+        "languages": {
+          "fr": "Français",
+          "en": "Anglais"
+        }
+      },
+      "suspension": {
+        "suspendTitle": "Suspendre le compte",
+        "suspendBody": "La suspension ferme aussitôt toutes ses sessions. Il ne pourra plus se connecter.",
+        "suspendCta": "Suspendre",
+        "reactivateTitle": "Réactiver le compte",
+        "reactivateBody": "La personne pourra se reconnecter. Une demande de suppression en cours est conservée.",
+        "reactivateCta": "Réactiver"
+      },
+      "roles": {
+        "title": "Rôles dans l’équipe",
+        "body": "Les rôles fan et artiste ne se modifient pas ici.",
+        "cta": "Enregistrer les rôles"
+      }
+    },
+    "artists": {
+      "title": "Artistes",
+      "subtitle": "Recherche un artiste pour attribuer ou retirer le badge « artiste vérifié ».",
+      "searchLabel": "Nom de scène",
+      "searchPlaceholder": "Nom de scène",
+      "verified": "Vérifié",
+      "notVerified": "Non vérifié",
+      "emptyTitle": "Aucun artiste trouvé",
+      "emptyBody": "Essaie une autre orthographe du nom de scène.",
+      "openPublic": "Voir la vitrine publique",
+      "city": "Ville",
+      "disciplines": "Disciplines",
+      "verifyTitle": "Badge « artiste vérifié »",
+      "verifyBody": "À attribuer seulement après vérification de l’identité de l’artiste.",
+      "verifyCta": "Attribuer le badge",
+      "unverifyCta": "Retirer le badge"
+    },
+    "audit": {
+      "title": "Journal d’audit",
+      "subtitle": "Toutes les actions sensibles, de la plus récente à la plus ancienne. Rien ne peut y être modifié.",
+      "filters": {
+        "action": "Action (début)",
+        "entityType": "Type d’objet",
+        "entityId": "Identifiant de l’objet",
+        "actorId": "Identifiant de l’auteur"
+      },
+      "columns": {
+        "date": "Date",
+        "actor": "Auteur",
+        "action": "Action",
+        "entity": "Objet",
+        "details": "Détails"
+      },
+      "system": "Système",
+      "emptyTitle": "Aucune entrée",
+      "emptyBody": "Aucune action ne correspond à ces filtres."
+    },
+    "errors": {
+      "PHONE_INVALID": "Ce numéro n’est pas valide. Vérifie-le et réessaie.",
+      "OTP_INVALID": "Code incorrect. Vérifie les 6 chiffres reçus par SMS.",
+      "OTP_EXPIRED": "Ce code a expiré. Demande un nouveau code.",
+      "OTP_TOO_MANY_ATTEMPTS": "Trop d’essais. Demande un nouveau code.",
+      "OTP_TOO_MANY_REQUESTS": "Trop de demandes de code. Réessaie dans quelques minutes.",
+      "ACCOUNT_SUSPENDED": "Ce compte est suspendu.",
+      "ADMIN_ACCESS_DENIED": "Ce compte ne fait pas partie de l’équipe. L’accès au back-office est refusé.",
+      "AUTH_FORBIDDEN": "Ton rôle ne permet pas cette action.",
+      "USER_NOT_FOUND": "Ce compte n’existe pas ou plus.",
+      "ARTIST_NOT_FOUND": "Cet artiste n’existe pas ou plus.",
+      "USER_ALREADY_SUSPENDED": "Ce compte est déjà suspendu.",
+      "USER_NOT_SUSPENDED": "Ce compte n’est pas suspendu.",
+      "ADMIN_CANNOT_SUSPEND_SELF": "Tu ne peux pas suspendre ton propre compte.",
+      "ADMIN_CANNOT_SUSPEND_STAFF": "Seul un administrateur peut suspendre un membre de l’équipe.",
+      "ADMIN_CANNOT_REACTIVATE_STAFF": "Seul un administrateur peut réactiver un membre de l’équipe.",
+      "ADMIN_SUSPENSION_LOCKED": "Cette suspension a été décidée par un administrateur : seul un administrateur peut la lever.",
+      "ADMIN_CANNOT_REMOVE_OWN_ADMIN": "Tu ne peux pas retirer ton propre rôle d’administrateur.",
+      "ARTIST_VERIFY_OWN_PROFILE": "Tu ne peux pas vérifier un profil dont tu es membre.",
+      "REASON_TOO_SHORT": "Écris un motif de 5 à 500 caractères.",
+      "VALIDATION_ERROR": "Certaines informations ne sont pas valides.",
+      "RATE_LIMITED": "Trop de demandes. Réessaie dans quelques minutes.",
+      "CURSOR_INVALID": "Cette page de résultats n’existe plus. Reviens au début.",
+      "API_UNAVAILABLE": "Le service ne répond pas. Vérifie ta connexion puis réessaie.",
+      "GENERIC": "Quelque chose s’est mal passé. Réessaie dans un instant."
+    }
   }
 }

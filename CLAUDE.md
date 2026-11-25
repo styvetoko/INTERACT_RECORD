@@ -110,5 +110,5 @@ Le détail est dans le skill `git-livraison`.
 
 - J1 livré : socle de l'API (comptes, sessions, PIN, disciplines configurables, artistes, audit).
 - J2 livré sur la branche `feat/j2-vitrine-backoffice` : vitrine (API et web), back-office (API),
-  corrections des revues de sécurité et de qualité. Écrans du back-office : à faire.
+  corrections des revues de sécurité et de qualité, écrans du back-office (`/admin`, ADR-0009).
 - Prochain : J3, publication des œuvres et traitement des médias audio et vidéo.

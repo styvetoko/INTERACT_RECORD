@@ -70,5 +70,200 @@
   },
   "footer": {
     "rights": "© {year} INTERACT RECORD. Proudly made in Cameroon."
+  },
+  "admin": {
+    "title": "Back office",
+    "brand": "Team",
+    "nav": {
+      "label": "Back office navigation",
+      "users": "Accounts",
+      "artists": "Artists",
+      "audit": "Audit log"
+    },
+    "signedInAs": "Signed in: {name}",
+    "unnamed": "No name",
+    "logout": "Sign out",
+    "roles": {
+      "ADMIN": "Administrator",
+      "MODERATOR": "Moderation",
+      "FINANCE": "Finance",
+      "SUPPORT": "Support",
+      "EDITOR": "Editorial",
+      "FAN": "Fan",
+      "ARTIST": "Artist",
+      "MANAGER": "Manager"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "DELETION_PENDING": "Deletion requested"
+    },
+    "login": {
+      "title": "Team space",
+      "subtitle": "Sign in with your account’s phone number. Only team members have access.",
+      "phoneLabel": "Phone number",
+      "phoneHint": "Example: 6 77 12 34 56. We add +237 for you.",
+      "send": "Get a code",
+      "codeLabel": "Code received by SMS",
+      "codeHint": "Sent to {phone}. It expires in 5 minutes.",
+      "verify": "Sign in",
+      "resend": "Resend the code",
+      "resent": "New code sent.",
+      "change": "Use another number",
+      "pending": "One moment…"
+    },
+    "home": {
+      "noToolsTitle": "No tools for your role yet",
+      "noToolsBody": "Finance and editorial screens arrive in the next steps."
+    },
+    "forbidden": {
+      "title": "Restricted access",
+      "body": "Your role can’t open this page. Ask an administrator if you need it."
+    },
+    "offline": "You’re offline. Pages already open stay readable; actions resume when the network is back.",
+    "common": {
+      "search": "Search",
+      "reset": "Clear",
+      "all": "All",
+      "next": "Next page",
+      "first": "Back to start",
+      "back": "Back",
+      "reason": "Reason",
+      "reasonHint": "5 to 500 characters. It is recorded in the audit log.",
+      "saved": "Saved.",
+      "pending": "Saving…",
+      "loading": "Loading",
+      "retry": "Try again",
+      "errorTitle": "This page couldn’t load",
+      "errorBody": "Check your connection and try again. If it keeps happening, tell the tech team."
+    },
+    "users": {
+      "title": "Accounts",
+      "subtitle": "Search by exact phone number or by name. Numbers are masked in the list.",
+      "searchLabel": "Phone or name",
+      "searchPlaceholder": "677 12 34 56 or Brice",
+      "statusFilter": "Status",
+      "roleFilter": "Role",
+      "columns": {
+        "name": "Name",
+        "phone": "Phone",
+        "city": "City",
+        "roles": "Roles",
+        "status": "Status",
+        "createdAt": "Joined"
+      },
+      "emptyTitle": "No account found",
+      "emptyBody": "Check the number, or try part of the name.",
+      "viewNotice": "Your viewing of this record is written to the audit log.",
+      "detail": {
+        "identity": "Identity",
+        "phone": "Phone",
+        "email": "Email",
+        "city": "City",
+        "country": "Country",
+        "language": "Language",
+        "createdAt": "Joined",
+        "kyc": "Identity check",
+        "kycLevel": "Level {level}",
+        "pin": "PIN",
+        "pinSet": "Set",
+        "pinUnset": "Not set yet",
+        "sessions": {
+          "one": "{count} signed-in device",
+          "other": "{count} signed-in devices"
+        },
+        "deletion": "Deletion requested on {date}",
+        "suspendedReason": "Suspension reason",
+        "artists": "Artist profiles",
+        "noArtists": "No artist profile.",
+        "memberRole": {
+          "OWNER": "Owner",
+          "MEMBER": "Member",
+          "MANAGER": "Manager"
+        },
+        "empty": "Not provided",
+        "devices": "Devices",
+        "languages": {
+          "fr": "French",
+          "en": "English"
+        }
+      },
+      "suspension": {
+        "suspendTitle": "Suspend the account",
+        "suspendBody": "Suspension immediately closes all their sessions. They won’t be able to sign in.",
+        "suspendCta": "Suspend",
+        "reactivateTitle": "Reactivate the account",
+        "reactivateBody": "The person can sign in again. A pending deletion request is kept.",
+        "reactivateCta": "Reactivate"
+      },
+      "roles": {
+        "title": "Team roles",
+        "body": "Fan and artist roles aren’t changed here.",
+        "cta": "Save roles"
+      }
+    },
+    "artists": {
+      "title": "Artists",
+      "subtitle": "Find an artist to grant or remove the “verified artist” badge.",
+      "searchLabel": "Stage name",
+      "searchPlaceholder": "Stage name",
+      "verified": "Verified",
+      "notVerified": "Not verified",
+      "emptyTitle": "No artist found",
+      "emptyBody": "Try another spelling of the stage name.",
+      "openPublic": "View public page",
+      "city": "City",
+      "disciplines": "Disciplines",
+      "verifyTitle": "“Verified artist” badge",
+      "verifyBody": "Grant it only after checking the artist’s identity.",
+      "verifyCta": "Grant the badge",
+      "unverifyCta": "Remove the badge"
+    },
+    "audit": {
+      "title": "Audit log",
+      "subtitle": "Every sensitive action, newest first. Nothing in it can be changed.",
+      "filters": {
+        "action": "Action (prefix)",
+        "entityType": "Object type",
+        "entityId": "Object ID",
+        "actorId": "Author ID"
+      },
+      "columns": {
+        "date": "Date",
+        "actor": "Author",
+        "action": "Action",
+        "entity": "Object",
+        "details": "Details"
+      },
+      "system": "System",
+      "emptyTitle": "No entries",
+      "emptyBody": "No action matches these filters."
+    },
+    "errors": {
+      "PHONE_INVALID": "This number isn’t valid. Check it and try again.",
+      "OTP_INVALID": "Wrong code. Check the 6 digits you received by SMS.",
+      "OTP_EXPIRED": "This code has expired. Ask for a new one.",
+      "OTP_TOO_MANY_ATTEMPTS": "Too many attempts. Ask for a new code.",
+      "OTP_TOO_MANY_REQUESTS": "Too many code requests. Try again in a few minutes.",
+      "ACCOUNT_SUSPENDED": "This account is suspended.",
+      "ADMIN_ACCESS_DENIED": "This account isn’t part of the team. Access to the back office is denied.",
+      "AUTH_FORBIDDEN": "Your role doesn’t allow this action.",
+      "USER_NOT_FOUND": "This account doesn’t exist anymore.",
+      "ARTIST_NOT_FOUND": "This artist doesn’t exist anymore.",
+      "USER_ALREADY_SUSPENDED": "This account is already suspended.",
+      "USER_NOT_SUSPENDED": "This account isn’t suspended.",
+      "ADMIN_CANNOT_SUSPEND_SELF": "You can’t suspend your own account.",
+      "ADMIN_CANNOT_SUSPEND_STAFF": "Only an administrator can suspend a team member.",
+      "ADMIN_CANNOT_REACTIVATE_STAFF": "Only an administrator can reactivate a team member.",
+      "ADMIN_SUSPENSION_LOCKED": "An administrator decided this suspension: only an administrator can lift it.",
+      "ADMIN_CANNOT_REMOVE_OWN_ADMIN": "You can’t remove your own administrator role.",
+      "ARTIST_VERIFY_OWN_PROFILE": "You can’t verify a profile you are a member of.",
+      "REASON_TOO_SHORT": "Write a reason of 5 to 500 characters.",
+      "VALIDATION_ERROR": "Some information isn’t valid.",
+      "RATE_LIMITED": "Too many requests. Try again in a few minutes.",
+      "CURSOR_INVALID": "This results page no longer exists. Go back to the start.",
+      "API_UNAVAILABLE": "The service isn’t responding. Check your connection and try again.",
+      "GENERIC": "Something went wrong. Try again in a moment."
+    }
   }
 }
