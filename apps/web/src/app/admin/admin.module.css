@@ -337,6 +337,10 @@
     border: none;
   }
 
+  .table td > * {
+    justify-self: start;
+  }
+
   .table td::before {
     content: attr(data-label);
     color: var(--color-text-tertiary);
