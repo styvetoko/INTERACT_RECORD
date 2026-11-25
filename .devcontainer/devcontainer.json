@@ -5,10 +5,21 @@
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "postCreateCommand": "bash .devcontainer/preparer.sh",
   "postStartCommand": "bash .devcontainer/demarrer.sh",
-  "forwardPorts": [3000],
+  "forwardPorts": [
+    3000
+  ],
   "portsAttributes": {
-    "3000": { "label": "Site et back-office", "onAutoForward": "openBrowser" },
-    "4000": { "label": "API (interne)", "onAutoForward": "silent" }
+    "3000": {
+      "label": "Site et back-office",
+      "onAutoForward": "openBrowser"
+    },
+    "4000": {
+      "label": "API (interne)",
+      "onAutoForward": "silent"
+    }
   },
-  "hostRequirements": { "cpus": 4, "memory": "8gb" }
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "8gb"
+  }
 }

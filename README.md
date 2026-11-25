@@ -71,6 +71,20 @@ Le jeu de démonstration (`pnpm --filter @interact/api seed:demo`) crée un comp
 L'API répond sur `http://localhost:4000`. En développement, les SMS ne sont pas envoyés : le code de connexion
 apparaît dans les journaux du serveur (faux fournisseur SMS).
 
+## Tester dans le navigateur, sans rien installer (GitHub Codespaces)
+
+1. Sur la page du dépôt GitHub, bouton vert **Code**, onglet **Codespaces**, puis **…** et
+   **New with options** : choisir la branche voulue, puis **Create codespace**.
+2. La première fois, la préparation prend quelques minutes (dépendances, base, artistes de démonstration,
+   construction du site). Le terminal affiche « Préparation terminée. »
+3. Onglet **PORTS**, ligne **3000** : cliquer sur l'icône globe. Le site public s'ouvre.
+4. Back-office : ajouter `/admin` à l'adresse. Numéro : `6 99 00 00 99` (compte administrateur de démonstration).
+   Le code SMS n'est pas envoyé : dans le terminal, taper `bash .devcontainer/code-sms.sh`.
+5. Après usage, arrêter le Codespace (menu Codespaces de GitHub) : le temps de calcul gratuit est limité chaque mois.
+
+Les données sont fictives et l'environnement est jetable. Le contrôle `devcontainer.yml` vérifie à chaque
+changement que cet environnement se prépare et démarre.
+
 ## Tests
 
 ```bash
