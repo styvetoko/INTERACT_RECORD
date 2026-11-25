@@ -7,7 +7,8 @@ import { safeBackPath } from '@/lib/format';
 export function GET(request: NextRequest) {
   const to = request.nextUrl.searchParams.get('to');
   const back = safeBackPath(request.nextUrl.searchParams.get('back'));
-  const response = NextResponse.redirect(new URL(back, request.url), 303);
+  // Adresse relative : le navigateur la résout sur le domaine qu'il voit, même derrière un proxy.
+  const response = new NextResponse(null, { status: 303, headers: { Location: back } });
   if (isLocale(to)) {
     response.cookies.set(LOCALE_COOKIE, to, { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax' });
   }

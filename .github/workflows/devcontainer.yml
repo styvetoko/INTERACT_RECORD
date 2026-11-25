@@ -1,0 +1,24 @@
+name: Environnement de démonstration
+
+# Vérifie que le Codespace de démonstration se prépare et démarre (base, API, site).
+on:
+  push:
+    branches: ['**']
+    paths: ['.devcontainer/**', '.github/workflows/devcontainer.yml']
+  workflow_dispatch:
+
+jobs:
+  demarrage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: devcontainers/ci@v0.3
+        with:
+          push: never
+          runCmd: |
+            bash .devcontainer/demarrer.sh
+            curl -sf -o /dev/null -w "accueil %{http_code}\n" http://localhost:3000/
+            curl -sf -o /dev/null -w "connexion %{http_code}\n" http://localhost:3000/admin/connexion
+            curl -s -o /dev/null -w "admin sans session %{http_code} -> %{redirect_url}\n" http://localhost:3000/admin/comptes
+            curl -sf http://localhost:3000/ | grep -q "Ngono Bikutsi" && echo "artistes de démonstration visibles"
+            curl -sf -o /dev/null -w "image via le site %{http_code}\n" "http://localhost:3000$(curl -sf http://localhost:4000/v1/artists/ngono-bikutsi | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>console.log(new URL(JSON.parse(d).avatar.variants[0].url).pathname))')"

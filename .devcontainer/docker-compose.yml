@@ -1,0 +1,19 @@
+# Environnement de démonstration : l'application et sa base PostgreSQL.
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
+    depends_on: [db]
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: interact
+      POSTGRES_PASSWORD: interact
+      POSTGRES_DB: interact_dev
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

@@ -30,10 +30,10 @@ function harden(res: NextResponse): NextResponse {
 }
 
 function toLogin(request: NextRequest): NextResponse {
-  const url = new URL(LOGIN_PATH, request.url);
   // Seul le chemin est gardé : une recherche par numéro ne doit pas se recopier dans l'adresse (revue F3).
-  url.searchParams.set('suite', request.nextUrl.pathname);
-  const res = NextResponse.redirect(url, 303);
+  // Adresse relative : juste derrière n'importe quel proxy.
+  const location = `${LOGIN_PATH}?${new URLSearchParams({ suite: request.nextUrl.pathname })}`;
+  const res = new NextResponse(null, { status: 303, headers: { Location: location } });
   res.cookies.set(ACCESS_COOKIE, '', cookieOptions(0));
   res.cookies.set(REFRESH_COOKIE, '', cookieOptions(0));
   return harden(res);

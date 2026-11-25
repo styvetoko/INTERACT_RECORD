@@ -5,6 +5,20 @@ const config: NextConfig = {
   poweredByHeader: false,
   // Les jetons de design sont un paquet du dépôt, transpilé par Next.
   transpilePackages: ['@interact/design-tokens'],
+  // Environnement de démonstration (Codespaces) : domaine public autorisé pour les actions serveur,
+  // et API servie par le site (images, QR code) pour n'ouvrir qu'un seul port. Rien en production.
+  ...(process.env.DEMO_PUBLIC_HOST
+    ? {
+        experimental: { serverActions: { allowedOrigins: [process.env.DEMO_PUBLIC_HOST] } },
+        async rewrites() {
+          const api = (process.env.API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
+          return [
+            { source: '/media/:path*', destination: `${api}/media/:path*` },
+            { source: '/v1/artists/:slug/qr.svg', destination: `${api}/v1/artists/:slug/qr.svg` },
+          ];
+        },
+      }
+    : {}),
   async headers() {
     return [
       {
