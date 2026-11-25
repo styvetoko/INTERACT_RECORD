@@ -49,6 +49,7 @@ pnpm --filter @interact/api build
 # L'API tourne pendant la construction du site, pour que les pages publiques contiennent déjà les artistes.
 (cd apps/api && node dist/main.js > /tmp/interact-build-api.log 2>&1 & echo $! > /tmp/interact-build-api.pid)
 for i in $(seq 1 60); do curl -sf http://localhost:4000/health >/dev/null && break; sleep 1; done
-(set -a; . apps/web/.env.local; set +a; pnpm --filter @interact/web build)
+# NODE_ENV vient de la configuration de l'API : le site, lui, se construit en production.
+(unset NODE_ENV; set -a; . apps/web/.env.local; set +a; pnpm --filter @interact/web build)
 kill "$(cat /tmp/interact-build-api.pid)" 2>/dev/null || true
 echo "Préparation terminée."
