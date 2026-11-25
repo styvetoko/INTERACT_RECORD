@@ -99,7 +99,6 @@ export default async function UserPage({ params }: { params: Promise<{ id: strin
         <div className={styles.stack}>
           {canSuspend && (
             <ReasonForm
-              key={user.status}
               id="suspension"
               t={t}
               action={suspensionAction}
@@ -111,7 +110,7 @@ export default async function UserPage({ params }: { params: Promise<{ id: strin
             />
           )}
           {can(me.roles, 'users.roles') && (
-            <RolesForm key={user.roles.join(',')} t={t} userId={user.id} current={user.roles} />
+            <RolesForm t={t} userId={user.id} current={user.roles} />
           )}
         </div>
       </div>

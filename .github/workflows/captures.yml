@@ -6,6 +6,9 @@ on:
     branches: ['**']
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   captures:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[captures]')
@@ -72,6 +75,21 @@ jobs:
       - name: Journaux en cas d'échec
         if: failure()
         run: tail -n 80 api.log web.log || true
+      - name: Publier les captures sur la branche recette/captures (un dossier par commit)
+        if: always()
+        run: |
+          set -e
+          dir="${GITHUB_SHA::7}"
+          git config user.name "github-actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin recette/captures:recette/captures 2>/dev/null || true
+          if git show-ref --quiet refs/heads/recette/captures; then
+            git worktree add /tmp/cap recette/captures
+          else
+            git worktree add --orphan -b recette/captures /tmp/cap
+          fi
+          mkdir -p "/tmp/cap/$dir" && cp -r captures/. "/tmp/cap/$dir/"
+          cd /tmp/cap && git add -A && git commit -qm "recette: captures de $dir" && git push origin recette/captures
       - uses: actions/upload-artifact@v4
         if: always()
         with:

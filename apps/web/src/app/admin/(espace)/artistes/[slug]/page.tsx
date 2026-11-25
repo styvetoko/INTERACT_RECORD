@@ -51,8 +51,8 @@ export default async function ArtistAdminPage({ params }: { params: Promise<{ sl
           <a href={`/${artist.slug}`} target="_blank" rel="noopener" className={styles.rowLink}>{t.artists.openPublic}</a>
         </section>
 
+        {/* Pas de « key » ici : le formulaire doit garder son message de succès après le rafraîchissement. */}
         <ReasonForm
-          key={String(artist.verified)}
           id="verification"
           t={t}
           action={verificationAction}

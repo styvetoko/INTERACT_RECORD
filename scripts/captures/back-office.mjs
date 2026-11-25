@@ -5,7 +5,7 @@
  *
  * Variables : BASE_URL (site), API_LOG (journal de l'API), OUT (dossier des images), ADMIN_PHONE.
  */
-import { readFileSync, mkdirSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:3000';
@@ -30,7 +30,25 @@ async function lastSmsCode(after) {
 const shot = (page, name) => page.screenshot({ path: `${OUT}/${name}.png`, fullPage: true });
 
 const browser = await chromium.launch();
-const results = [];
+let failures = 0;
+const results = {
+  push(line) {
+    console.log(line);
+    appendFileSync(`${OUT}/resultats.txt`, `${line}\n`);
+  },
+};
+
+/** Une étape de recette : en cas d'échec, on note, on capture l'écran et on continue. */
+async function step(name, page, fn) {
+  try {
+    await fn();
+    results.push(`OK     ${name}`);
+  } catch (e) {
+    failures++;
+    results.push(`ÉCHEC  ${name} : ${String(e.message).split('\n')[0]}`);
+    await page.screenshot({ path: `${OUT}/echec-${name.replace(/[^a-z0-9]+/gi, '-')}.png`, fullPage: true }).catch(() => {});
+  }
+}
 
 // 1. Connexion (une seule demande de code : l'API en accepte 3 par 10 minutes).
 const login = await browser.newContext({ viewport: VIEWPORTS.ordinateur });
@@ -58,28 +76,35 @@ for (const locale of ['fr', 'en']) {
     const page = await ctx.newPage();
     const p = `${device}-${locale}`;
 
-    await page.goto(`${BASE}/admin/comptes`);
-    await page.waitForSelector('table');
-    await shot(page, `${p}-03-comptes`);
-
-    await page.goto(`${BASE}/admin/comptes?q=zzzzzz`);
-    await shot(page, `${p}-04-comptes-vide`);
-
-    await page.goto(`${BASE}/admin/comptes?role=ARTIST`);
-    await page.click('table a');
-    await page.waitForURL(/\/admin\/comptes\/[0-9a-f-]{36}/);
-    await shot(page, `${p}-05-fiche-compte`);
-
-    await page.goto(`${BASE}/admin/artistes`);
-    await page.waitForSelector('table');
-    await shot(page, `${p}-06-artistes`);
-    await page.click('table a');
-    await page.waitForURL(/\/admin\/artistes\/[a-z0-9-]+$/);
-    await shot(page, `${p}-07-fiche-artiste`);
-
-    await page.goto(`${BASE}/admin/journal`);
-    await page.waitForSelector('table');
-    await shot(page, `${p}-08-journal`);
+    await step(`${p} comptes`, page, async () => {
+      await page.goto(`${BASE}/admin/comptes`);
+      await page.waitForSelector('table');
+      await shot(page, `${p}-03-comptes`);
+    });
+    await step(`${p} comptes vide`, page, async () => {
+      await page.goto(`${BASE}/admin/comptes?q=zzzzzz`);
+      await page.waitForSelector('[role="status"]');
+      await shot(page, `${p}-04-comptes-vide`);
+    });
+    await step(`${p} fiche compte`, page, async () => {
+      await page.goto(`${BASE}/admin/comptes?role=ARTIST`);
+      await page.click('table a');
+      await page.waitForURL(/\/admin\/comptes\/[0-9a-f-]{36}/);
+      await shot(page, `${p}-05-fiche-compte`);
+    });
+    await step(`${p} artistes`, page, async () => {
+      await page.goto(`${BASE}/admin/artistes`);
+      await page.waitForSelector('table');
+      await shot(page, `${p}-06-artistes`);
+      await page.click('table a');
+      await page.waitForURL(/\/admin\/artistes\/[a-z0-9-]+$/);
+      await shot(page, `${p}-07-fiche-artiste`);
+    });
+    await step(`${p} journal`, page, async () => {
+      await page.goto(`${BASE}/admin/journal`);
+      await page.waitForSelector('table');
+      await shot(page, `${p}-08-journal`);
+    });
 
     // Vérifications simples d'accessibilité : aucune cible tactile sous 44 px dans la zone principale.
     const small = await page.$$eval('main a, main button, main input, main select, header a, header button', (els) =>
@@ -101,6 +126,7 @@ for (const locale of ['fr', 'en']) {
 const act = await browser.newContext({ viewport: VIEWPORTS.ordinateur, storageState: session });
 await act.addCookies([{ name: 'lang', value: 'fr', domain: host, path: '/' }]);
 const ap = await act.newPage();
+await step('badge vérifié avec motif, tracé au journal', ap, async () => {
 await ap.goto(`${BASE}/admin/artistes`);
 await ap.click('table a');
 await ap.waitForURL(/\/admin\/artistes\//);
@@ -114,7 +140,24 @@ await shot(ap, 'ordinateur-fr-10-badge-enregistre');
 await ap.goto(`${BASE}/admin/journal?action=artist.`);
 await ap.waitForSelector('table');
 await shot(ap, 'ordinateur-fr-11-journal-trace');
-results.push('badge vérifié modifié et tracé : ok');
+});
+
+// 4. Suspension puis réactivation d'un compte artiste, avec motif.
+await step('suspension puis réactivation', ap, async () => {
+  await ap.goto(`${BASE}/admin/comptes?role=ARTIST`);
+  await ap.click('table a');
+  await ap.waitForURL(/\/admin\/comptes\/[0-9a-f-]{36}/);
+  const f = 'form:has(#suspension-reason)';
+  await ap.fill('#suspension-reason', 'Recette : suspension de test');
+  await ap.click(`${f} button[type="submit"]`);
+  await ap.waitForSelector(`${f} [role="status"]`);
+  await shot(ap, 'ordinateur-fr-12-compte-suspendu');
+  await ap.fill('#suspension-reason', 'Recette : fin du test');
+  await ap.click(`${f} button[type="submit"]`);
+  await ap.waitForSelector(`${f} [role="status"]`);
+  await shot(ap, 'ordinateur-fr-13-compte-reactive');
+});
 
 await browser.close();
-console.log(results.join('\n'));
+results.push(failures ? `${failures} étape(s) en échec` : 'Toutes les étapes passent');
+process.exitCode = failures ? 1 : 0;
