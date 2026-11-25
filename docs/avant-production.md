@@ -12,6 +12,8 @@ Chaque ligne vient d'une revue, d'une recette ou d'un ADR. On coche, on ne suppr
 - [ ] **Suppression de compte et suspension** (revue M2) : le délai de grâce de 30 jours court-il
       pendant une suspension ?
 - [ ] **Qui attribue le badge vérifié** (ACC-06) : lien obligatoire avec le KYC ?
+- [ ] **Données visibles par la modération** (revue F4) : un modérateur doit-il voir le numéro complet,
+      l'e-mail et la ville d'un compte ? Aujourd'hui oui, chaque consultation étant tracée.
 
 ## Technique
 
@@ -25,7 +27,16 @@ Chaque ligne vient d'une revue, d'une recette ou d'un ADR. On coche, on ne suppr
       en mémoire d'une seule instance (ADR-0009). Session collante, ou délai de grâce dans l'API.
 - [ ] Back-office : les demandes de code SMS partent toutes de l'IP du serveur web (limite de l'API partagée
       par l'équipe, ADR-0009).
-- [ ] Politique de sécurité du contenu (CSP) pour le site et le back-office.
+- [ ] Politique de sécurité du contenu (CSP avec nonce, `frame-ancestors 'none'`, `form-action 'self'`)
+      et HSTS pour le site et le back-office (revue F2).
+- [ ] Back-office : l'API doit connaître l'IP réelle de l'utilisateur, par un en-tête que seul le serveur web
+      peut poser (secret partagé), et le web doit limiter lui-même les tentatives de connexion (revue M1).
+- [ ] Délai de grâce ou renouvellement idempotent dans l'API pour le jeton de rafraîchissement (revue M2, ADR à écrire).
+- [ ] Limite absolue de durée d'une session du back-office, et session API courte pour l'appareil
+      « Back-office web » (revue F5).
+- [ ] Journal d'audit des connexions au back-office : `admin.login` et `admin.login_denied` (revue F6).
+- [ ] Recherche de comptes par numéro : exclure les paramètres d'URL de `/admin` des journaux d'accès
+      de l'hébergeur, ou passer la recherche en POST (revue F3).
 - [ ] Back-office : tests de parcours Playwright (connexion, suspension, rôles, badge) contre une API de test.
 - [ ] Vrais fournisseurs SMS et paiement (aujourd'hui faux fournisseurs, interdits en production).
 - [ ] Test d'intrusion par un cabinet externe.

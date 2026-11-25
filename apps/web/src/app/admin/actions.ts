@@ -14,6 +14,12 @@ import {
   ACCESS_COOKIE, cookieOptions, DEVICE_NAME, LOGIN_PATH, REFRESH_COOKIE, REFRESH_COOKIE_MAX_AGE_SECONDS, safeAdminPath,
 } from '@/lib/admin/session-core';
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SLUG = /^[a-z0-9-]{2,60}$/;
+/** Numéro au format international renvoyé par l'API (+237…) : l'état précédent vient du navigateur (revue F1). */
+const E164 = /^\+\d{8,15}$/;
+const INVALID: FormState = { status: 'error', code: 'VALIDATION_ERROR' };
+
 const text = (fd: FormData, key: string) => {
   const v = fd.get(key);
   return typeof v === 'string' ? v.trim() : '';
@@ -34,7 +40,10 @@ export interface LoginState {
   resent: boolean;
 }
 
-export async function loginAction(prev: LoginState, fd: FormData): Promise<LoginState> {
+export async function loginAction(clientState: LoginState, fd: FormData): Promise<LoginState> {
+  // L'état précédent est renvoyé par le navigateur : on n'en garde que le numéro, revalidé.
+  const known = typeof clientState?.phone === 'string' && E164.test(clientState.phone) ? clientState.phone : '';
+  const prev: LoginState = { step: known ? 'code' : 'phone', phone: known, error: null, resent: false };
   const intent = text(fd, 'intent');
   if (intent === 'restart') return { step: 'phone', phone: '', error: null, resent: false };
 
@@ -51,6 +60,7 @@ export async function loginAction(prev: LoginState, fd: FormData): Promise<Login
   }
 
   // intent === 'verify'
+  if (!prev.phone) return { step: 'phone', phone: '', error: 'PHONE_INVALID', resent: false };
   const code = text(fd, 'code').replace(/\s/g, '');
   if (!/^\d{6}$/.test(code)) return { ...prev, error: 'OTP_INVALID', resent: false };
 
@@ -88,6 +98,7 @@ export async function logoutAction(): Promise<void> {
 export async function suspensionAction(_: FormState, fd: FormData): Promise<FormState> {
   const id = text(fd, 'id');
   const intent = text(fd, 'intent');
+  if (!UUID.test(id) || (intent !== 'suspend' && intent !== 'reactivate')) return INVALID;
   const reason = checkReason(fd.get('reason'));
   if (!reason.ok) return { status: 'error', code: reason.code };
   try {
@@ -102,6 +113,7 @@ export async function suspensionAction(_: FormState, fd: FormData): Promise<Form
 
 export async function rolesAction(_: FormState, fd: FormData): Promise<FormState> {
   const id = text(fd, 'id');
+  if (!UUID.test(id)) return INVALID;
   const roles = fd.getAll('roles').filter((r): r is string => typeof r === 'string' && isInternalRole(r));
   const reason = checkReason(fd.get('reason'));
   if (!reason.ok) return { status: 'error', code: reason.code };
@@ -118,6 +130,7 @@ export async function rolesAction(_: FormState, fd: FormData): Promise<FormState
 
 export async function verificationAction(_: FormState, fd: FormData): Promise<FormState> {
   const slug = text(fd, 'slug');
+  if (!SLUG.test(slug)) return INVALID;
   const verified = text(fd, 'verified') === 'true';
   const reason = checkReason(fd.get('reason'));
   if (!reason.ok) return { status: 'error', code: reason.code };

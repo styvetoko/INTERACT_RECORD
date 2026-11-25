@@ -1,13 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import {
-  ACCESS_COOKIE, cookieOptions, createRefreshDeduper, DEVICE_NAME, LOGIN_PATH, needsRefresh, REFRESH_COOKIE,
-  REFRESH_COOKIE_MAX_AGE_SECONDS, type TokenPair,
+  ACCESS_COOKIE, classifyRefresh, cookieOptions, createRefreshDeduper, DEVICE_NAME, LOGIN_PATH, needsRefresh,
+  REFRESH_COOKIE, REFRESH_COOKIE_MAX_AGE_SECONDS, type RefreshResult, type TokenPair,
 } from '@/lib/admin/session-core';
 
 const API_URL = (process.env.API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
 
 /** Un renouvellement par jeton de rafraîchissement, même si plusieurs requêtes arrivent ensemble (ADR-0009). */
-const refreshOnce = createRefreshDeduper(async (refreshToken) => {
+const refreshOnce = createRefreshDeduper(async (refreshToken): Promise<RefreshResult> => {
   try {
     const res = await fetch(`${API_URL}/v1/auth/refresh`, {
       method: 'POST',
@@ -15,9 +15,10 @@ const refreshOnce = createRefreshDeduper(async (refreshToken) => {
       headers: { 'content-type': 'application/json', accept: 'application/json' },
       body: JSON.stringify({ refreshToken, deviceName: DEVICE_NAME }),
     });
-    return res.ok ? ((await res.json()) as TokenPair) : null;
+    if (res.ok) return { status: 'ok', tokens: (await res.json()) as TokenPair };
+    return { status: classifyRefresh(res.status) };
   } catch {
-    return null;
+    return { status: 'unavailable' };
   }
 });
 
@@ -30,7 +31,8 @@ function harden(res: NextResponse): NextResponse {
 
 function toLogin(request: NextRequest): NextResponse {
   const url = new URL(LOGIN_PATH, request.url);
-  url.searchParams.set('suite', `${request.nextUrl.pathname}${request.nextUrl.search}`);
+  // Seul le chemin est gardé : une recherche par numéro ne doit pas se recopier dans l'adresse (revue F3).
+  url.searchParams.set('suite', request.nextUrl.pathname);
   const res = NextResponse.redirect(url, 303);
   res.cookies.set(ACCESS_COOKIE, '', cookieOptions(0));
   res.cookies.set(REFRESH_COOKIE, '', cookieOptions(0));
@@ -46,8 +48,11 @@ export async function middleware(request: NextRequest) {
   if (!refresh) return toLogin(request);
   if (!needsRefresh(access)) return harden(NextResponse.next());
 
-  const tokens = await refreshOnce(refresh);
-  if (!tokens) return toLogin(request);
+  const result = await refreshOnce(refresh);
+  if (result.status === 'rejected') return toLogin(request);
+  // Panne ou limite de débit (revue sécurité M1) : on ne déconnecte pas ; la page dira « réessaie ».
+  if (result.status === 'unavailable') return harden(NextResponse.next());
+  const { tokens } = result;
 
   // Les nouveaux jetons servent dès cette requête (pages et actions serveur) puis sont posés dans le navigateur.
   request.cookies.set(ACCESS_COOKIE, tokens.accessToken);

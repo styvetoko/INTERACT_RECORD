@@ -98,4 +98,11 @@ et de l'éditorial (avec leurs modules).
   Vitest. Non vérifié dans cet environnement (installation des dépendances impossible) : compilation
   Next.js, rendu réel des écrans, parcours complet contre l'API. La CI le vérifie au push ; les captures
   et les parcours Playwright restent à faire.
+- Revue de sécurité des écrans (26 novembre) : 1 grave, 2 moyens, 7 faibles.
+  G1 (redirection ouverte par `/lang`, présente depuis le J2) corrigé et testé ; M1 corrigé côté web
+  (une panne ou une limite ne déconnecte plus), le reste inscrit avant la production ; M2 réduit (plus de
+  cache après l'appel), le délai de grâce dans l'API reste à faire ; F1 et F7 corrigés ; F2 à F6 inscrits
+  dans `docs/avant-production.md`.
+- Recette par captures (workflow `captures.yml`) : a trouvé un défaut, le message « C'est enregistré »
+  effacé après l'action (formulaire remonté par un attribut `key`), corrigé.
 

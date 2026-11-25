@@ -48,5 +48,12 @@ describe('formats', () => {
     expect(safeBackPath('//evil.com')).toBe('/');
     expect(safeBackPath('https://evil.com')).toBe('/');
     expect(safeBackPath('/\\evil.com')).toBe('/');
+    // Revue sécurité G1 : le navigateur retire tabulations et retours à la ligne avant d'interpréter l'adresse.
+    expect(safeBackPath('/\t/evil.com')).toBe('/');
+    expect(safeBackPath('/\n/evil.com')).toBe('/');
+    expect(safeBackPath('/\r/evil.com')).toBe('/');
+    expect(safeBackPath(decodeURIComponent('/%09/evil.com/admin/connexion'))).toBe('/');
+    expect(safeBackPath(decodeURIComponent('/%5c/evil.com'))).toBe('/');
+    expect(safeBackPath('/ernest?tab=about')).toBe('/ernest?tab=about');
   });
 });

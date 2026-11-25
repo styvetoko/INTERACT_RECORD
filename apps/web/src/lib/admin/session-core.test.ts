@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  ADMIN_PATH, cookieOptions, createRefreshDeduper, jwtExpiresAt, needsRefresh, safeAdminPath, type TokenPair,
+  ADMIN_PATH, classifyRefresh, cookieOptions, createRefreshDeduper, jwtExpiresAt, needsRefresh, safeAdminPath,
+  type RefreshResult, type TokenPair,
 } from './session-core';
 
 /** Jeton au format JWT avec la date d'expiration voulue (la signature n'est pas lue). */
@@ -40,32 +41,39 @@ describe('session du back-office (ADR-0009)', () => {
   });
 
   it('n’envoie qu’un renouvellement pour des requêtes simultanées (évite la détection de vol)', async () => {
-    const pair: TokenPair = { accessToken: 'a2', accessTokenExpiresIn: 900, refreshToken: 'r2' };
-    const refresh = vi.fn(async () => pair);
+    const tokens: TokenPair = { accessToken: 'a2', accessTokenExpiresIn: 900, refreshToken: 'r2' };
+    const refresh = vi.fn(async (): Promise<RefreshResult> => ({ status: 'ok', tokens }));
     const once = createRefreshDeduper(refresh);
     const results = await Promise.all([once('r1'), once('r1'), once('r1')]);
     expect(refresh).toHaveBeenCalledTimes(1);
-    expect(results).toEqual([pair, pair, pair]);
-    // Une requête un peu plus tardive avec l'ancien jeton reçoit le même résultat.
-    expect(await once('r1')).toBe(pair);
-    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(results.every((r) => r.status === 'ok' && r.tokens === tokens)).toBe(true);
   });
 
-  it('oublie le résultat après 30 secondes', async () => {
-    let clock = 0;
-    const refresh = vi.fn(async () => null);
-    const once = createRefreshDeduper(refresh, () => clock);
+  it('ne garde rien après l’appel : un ancien jeton réutilisé plus tard repart vers l’API, qui le détecte (revue M2)', async () => {
+    const refresh = vi.fn(async (): Promise<RefreshResult> => ({ status: 'rejected' }));
+    const once = createRefreshDeduper(refresh);
     await once('r1');
-    clock = 31_000;
     await once('r1');
     expect(refresh).toHaveBeenCalledTimes(2);
   });
 
   it('laisse réessayer si le renouvellement a échoué par une exception', async () => {
-    const refresh = vi.fn().mockRejectedValueOnce(new Error('réseau')).mockResolvedValueOnce(null);
+    const refresh = vi.fn().mockRejectedValueOnce(new Error('réseau')).mockResolvedValueOnce({ status: 'unavailable' });
     const once = createRefreshDeduper(refresh);
     await expect(once('r1')).rejects.toThrow('réseau');
-    expect(await once('r1')).toBeNull();
-    expect(refresh).toHaveBeenCalledTimes(2);
+    expect(await once('r1')).toEqual({ status: 'unavailable' });
+  });
+
+  it('ne déconnecte que sur un vrai refus de l’API, pas sur une limite de débit ou une panne (revue M1)', () => {
+    expect(classifyRefresh(401)).toBe('rejected');
+    expect(classifyRefresh(429)).toBe('unavailable');
+    expect(classifyRefresh(503)).toBe('unavailable');
+    expect(classifyRefresh(500)).toBe('unavailable');
+  });
+
+  it('refuse les chemins de retour qui changent d’origine une fois interprétés (revue G1)', () => {
+    expect(safeAdminPath('/admin/\t/x')).toBe(ADMIN_PATH);
+    expect(safeAdminPath('/admin\n//pirate.example')).toBe(ADMIN_PATH);
+    expect(safeAdminPath('/admin/journal?action=user.')).toBe('/admin/journal?action=user.');
   });
 });

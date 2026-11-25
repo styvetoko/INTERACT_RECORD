@@ -30,6 +30,9 @@ Toutes les évolutions visibles d'INTERACT RECORD, écrites pour un lecteur non 
 - Contre-vérification de sécurité : rien ne bloque ; 5 points faibles supplémentaires corrigés
   (verrou de suspension figé, limites de débit par utilisateur, journaux sans données personnelles,
   file des images, démarrage impossible sans environnement déclaré). 152 tests.
+- Revue de sécurité des écrans du back-office : une redirection vers un site pirate possible par le lien
+  de changement de langue (corrigée, aussi pour le site public), une déconnexion forcée possible en
+  saturant les limites (corrigée en partie), et 7 points faibles, corrigés ou inscrits avant la production.
 - Back-office : les jetons de connexion restent sur le serveur web (cookies inaccessibles au
   navigateur), la session se ferme après 8 heures sans activité, et un compte hors de l'équipe est
   refusé même avec le bon code SMS (ADR-0009).

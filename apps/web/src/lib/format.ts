@@ -31,8 +31,21 @@ export function pickVariant(image: PublicImage, minWidth: number) {
 export const localized = (o: { nameFr: string; nameEn: string }, locale: Locale) => (locale === 'fr' ? o.nameFr : o.nameEn);
 export const localizedLabel = (o: { labelFr: string; labelEn: string }, locale: Locale) => (locale === 'fr' ? o.labelFr : o.labelEn);
 
-/** Un chemin de retour sûr : interne au site, jamais vers un autre domaine. */
+const PROBE_ORIGIN = 'https://interactrecord.invalid';
+
+/**
+ * Un chemin de retour sûr : interne au site, jamais vers un autre domaine.
+ * La valeur est interprétée comme le ferait le navigateur (qui retire tabulations et retours
+ * à la ligne : « /\t/pirate.example » mène ailleurs), puis on compare l'origine.
+ */
 export function safeBackPath(value: string | null): string {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return '/';
-  return value;
+  if (!value || !value.startsWith('/') || /[\u0000-\u001f\u007f\\]/.test(value)) return '/';
+  let url: URL;
+  try {
+    url = new URL(value, PROBE_ORIGIN);
+  } catch {
+    return '/';
+  }
+  if (url.origin !== PROBE_ORIGIN) return '/';
+  return `${url.pathname}${url.search}${url.hash}`;
 }

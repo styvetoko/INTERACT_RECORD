@@ -35,8 +35,11 @@ Option 2.
   après 8 heures sans activité, pas 30 jours.
 - Le middleware Next (`src/middleware.ts`) renouvelle le jeton d'accès une minute avant son expiration.
   Deux requêtes simultanées pourraient présenter le même jeton de rafraîchissement et déclencher la
-  détection de vol : le middleware garde 30 secondes en mémoire le résultat d'un renouvellement, et les
-  liens du back-office ne sont pas préchargés.
+  détection de vol : elles partagent le même appel en cours, et les liens du back-office ne sont pas
+  préchargés. Rien n'est gardé après l'appel : un ancien jeton présenté plus tard reste détecté par
+  l'API (revue sécurité M2 ; une première version le gardait 30 secondes, ce qui masquait un vol).
+- Seul un refus explicite de l'API (401) déconnecte. Une limite de débit (429) ou une panne laisse
+  la session intacte (revue sécurité M1).
 - Les droits affichés (menus, boutons) suivent la même matrice que l'API (`lib/admin/permissions.ts`).
   L'API reste seule juge : le web ne fait que masquer ce qui serait refusé.
 - Les actions serveur de Next vérifient l'origine de la requête, ce qui protège contre le CSRF,
@@ -52,4 +55,11 @@ Option 2.
   pourraient encore se marcher dessus. À traiter avant la production (session collante, ou délai de
   grâce sur la réutilisation dans l'API, par un nouvel ADR).
 - Se connecter avec un numéro inconnu crée un compte fan dans l'API (comportement d'ACC-01), puis la
-  session est fermée. Acceptable, mais tracé dans le journal d'audit.
+  session est fermée. Seule la création du compte (`user.signup`) est tracée : ni les connexions de
+  l'équipe ni les refus ne le sont encore (revue sécurité F6, voir `docs/avant-production.md`).
+- Un attaquant anonyme peut épuiser volontairement ces limites partagées et empêcher l'équipe de se
+  connecter (revue sécurité M1). À corriger avant la production : l'API doit connaître l'IP réelle du
+  client par un en-tête que seul le serveur web peut poser.
+- Une réponse perdue en route (onglet fermé, coupure 3G) pendant un renouvellement laisse le navigateur
+  avec un ancien jeton : à la requête suivante, l'API ferme toutes les sessions de la personne. Rare, mais
+  à traiter par un délai de grâce côté API (nouvel ADR).

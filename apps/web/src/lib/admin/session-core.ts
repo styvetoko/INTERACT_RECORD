@@ -8,7 +8,7 @@ export const REFRESH_COOKIE = 'ir_admin_rt';
 export const ADMIN_PATH = '/admin';
 export const LOGIN_PATH = '/admin/connexion';
 
-/** Une journée de travail : au-delà, on se reconnecte par SMS. */
+/** Durée de vie du cookie, reposée à chaque renouvellement : 8 heures sans activité (pas de limite absolue, voir avant-production). */
 export const REFRESH_COOKIE_MAX_AGE_SECONDS = 8 * 60 * 60;
 /** On renouvelle le jeton d'accès une minute avant son expiration. */
 export const REFRESH_MARGIN_MS = 60_000;
@@ -52,7 +52,12 @@ export function needsRefresh(accessToken: string | undefined, now = Date.now()):
 
 /** Chemin de retour après connexion : uniquement une page du back-office, jamais un autre site. */
 export function safeAdminPath(value: string | null | undefined): string {
-  if (!value || value.includes('\\') || value.startsWith('//')) return ADMIN_PATH;
+  if (!value || value.includes('\\') || value.startsWith('//') || /[\u0000-\u001f\u007f]/.test(value)) return ADMIN_PATH;
+  try {
+    if (new URL(value, 'https://interactrecord.invalid').origin !== 'https://interactrecord.invalid') return ADMIN_PATH;
+  } catch {
+    return ADMIN_PATH;
+  }
   if (value !== ADMIN_PATH && !value.startsWith(`${ADMIN_PATH}/`)) return ADMIN_PATH;
   if (value === LOGIN_PATH || value.startsWith(`${LOGIN_PATH}?`) || value.startsWith(`${LOGIN_PATH}/`)) return ADMIN_PATH;
   return value;
@@ -64,30 +69,26 @@ export interface TokenPair {
   refreshToken: string;
 }
 
-const RECENT_TTL_MS = 30_000;
+/** Résultat d'un renouvellement : refusé par l'API (session finie) ou impossible pour l'instant (panne, limite). */
+export type RefreshResult = { status: 'ok'; tokens: TokenPair } | { status: 'rejected' } | { status: 'unavailable' };
+
+/** Seul un refus explicite de l'API (401) met fin à la session ; un 429 ou une panne ne déconnecte personne. */
+export function classifyRefresh(status: number): 'rejected' | 'unavailable' {
+  return status === 401 ? 'rejected' : 'unavailable';
+}
 
 /**
- * Évite qu'un même jeton de rafraîchissement parte deux fois vers l'API (ce qui fermerait toutes
- * les sessions, ADR-0004) quand deux requêtes arrivent en même temps : la première renouvelle,
- * les suivantes reçoivent le même résultat pendant 30 secondes. Mémoire d'une seule instance.
+ * Évite qu'un même jeton de rafraîchissement parte deux fois vers l'API en même temps (ce qui
+ * fermerait toutes les sessions, ADR-0004) : les requêtes simultanées partagent l'appel en cours.
+ * Rien n'est gardé une fois l'appel terminé (revue sécurité M2) : réutiliser plus tard un ancien
+ * jeton reste détecté par l'API. Mémoire d'une seule instance.
  */
-export function createRefreshDeduper(refresh: (refreshToken: string) => Promise<TokenPair | null>, now = () => Date.now()) {
-  const inFlight = new Map<string, Promise<TokenPair | null>>();
-  const recent = new Map<string, { at: number; result: TokenPair | null }>();
-
-  return async (refreshToken: string): Promise<TokenPair | null> => {
-    for (const [key, entry] of recent) if (now() - entry.at > RECENT_TTL_MS) recent.delete(key);
-    const done = recent.get(refreshToken);
-    if (done) return done.result;
+export function createRefreshDeduper(refresh: (refreshToken: string) => Promise<RefreshResult>) {
+  const inFlight = new Map<string, Promise<RefreshResult>>();
+  return (refreshToken: string): Promise<RefreshResult> => {
     const pending = inFlight.get(refreshToken);
     if (pending) return pending;
-
-    const promise = refresh(refreshToken)
-      .then((result) => {
-        recent.set(refreshToken, { at: now(), result });
-        return result;
-      })
-      .finally(() => inFlight.delete(refreshToken));
+    const promise = refresh(refreshToken).finally(() => inFlight.delete(refreshToken));
     inFlight.set(refreshToken, promise);
     return promise;
   };
