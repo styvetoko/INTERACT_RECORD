@@ -1,0 +1,40 @@
+connexion : ok
+OK     mobile-fr comptes
+OK     mobile-fr comptes vide
+OK     mobile-fr fiche compte
+OK     mobile-fr artistes
+OK     mobile-fr journal
+OK     mobile-fr pas de débordement /admin/comptes
+OK     mobile-fr pas de débordement /admin/artistes
+OK     mobile-fr pas de débordement /admin/journal
+mobile-fr : cibles < 44 px : aucune
+OK     ordinateur-fr comptes
+OK     ordinateur-fr comptes vide
+OK     ordinateur-fr fiche compte
+OK     ordinateur-fr artistes
+OK     ordinateur-fr journal
+OK     ordinateur-fr pas de débordement /admin/comptes
+OK     ordinateur-fr pas de débordement /admin/artistes
+OK     ordinateur-fr pas de débordement /admin/journal
+ordinateur-fr : cibles < 44 px : aucune
+OK     mobile-en comptes
+OK     mobile-en comptes vide
+OK     mobile-en fiche compte
+OK     mobile-en artistes
+OK     mobile-en journal
+OK     mobile-en pas de débordement /admin/comptes
+OK     mobile-en pas de débordement /admin/artistes
+OK     mobile-en pas de débordement /admin/journal
+mobile-en : cibles < 44 px : aucune
+OK     ordinateur-en comptes
+OK     ordinateur-en comptes vide
+OK     ordinateur-en fiche compte
+OK     ordinateur-en artistes
+OK     ordinateur-en journal
+OK     ordinateur-en pas de débordement /admin/comptes
+OK     ordinateur-en pas de débordement /admin/artistes
+OK     ordinateur-en pas de débordement /admin/journal
+ordinateur-en : cibles < 44 px : aucune
+OK     badge vérifié avec motif, tracé au journal
+OK     suspension puis réactivation
+Toutes les étapes passent
